@@ -1,5 +1,8 @@
 proc fakespec { args } {
-	
+
+# Supress output (uncomment the next line to get all output).
+chatter 5
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # BEGIN > DEFINITIONS - CHANGE THESE TO YOUR SPECIFIC TASK! #
 
@@ -14,13 +17,10 @@ proc fakespec { args } {
 	set nspectra 100.	; # Note that we actually get nspectra+1 spectra!
 	
 	# Model Parameters
-
 	set temp 1.
 	set nH 1.
-	set abundance 0.3
-	set redshift 0.18
 	set switch 1.
-	set norm 2.47359
+	set norm 1.
 	
 	# Fakeit Parameters
 	set exposuretime 4179600.2
@@ -29,16 +29,20 @@ proc fakespec { args } {
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 if {[exec ls ./data/output/] == ""} then {
+	
+	# Get cluster name and filename prefix for fits files from the user
+		puts "Please enter the cluster name:"
+		gets stdin cluster_name
+		puts "Please enter filename prefix for FITS files, including tailing _'s (ie. 1666_ for filenames: '1666_xx.pi'):"
+		gets stdin file_prefix
+		puts "Please enter number of bins / annuli in the data:"
+		gets stdin nbin
+
+	# Read in parameters for the cluster
+		source ./data/clusters/$cluster_name/$cluster_name.tcl
+	
 	# Note that this way we actually get nspectra+1 spectra!
 	set stepsize [expr ($param_max-$param_min)/$nspectra]
-	
-	# Galactic absorbtion for: A2218
-	set Hcolumn 0.026
-
-	# Galactic absorbtion for: A1689
-	set Hcolumn 0.0183
-	
-	# dummyrsp .01 10 1024
 	
 	# Initiate the model (ignoring parameters for now)
 	model mekal & $temp & $nH & $abundance & $redshift & $switch & $norm &
@@ -47,19 +51,30 @@ if {[exec ls ./data/output/] == ""} then {
 	addcomp 2 wabs & $Hcolumn
 
 	# Run through all parameters generating spectra and dumping to unique ACSII files
-	for {set param $param_min} {$param <= $param_max} {set param [expr $param + $stepsize]} {
-		newpar $ipar & $param
-		data none
-		puts "Faking spectrum with parameter $ipar = $param."
-		fakeit none & &y & & ./data/output/fakespec.fak & $exposuretime &
-		# Uncomment next line to use external response matrices
-		# fakeit none & $file_response & $file_arf & y & & ./data/output/fakespec.fak & $exposuretime &
-		puts "Dumping spectrum to: fakespec_$ipar-$param.txt"
-		fdump infile=./data/output/fakespec.fak outfile=./data/output/fakespec_$ipar-[format "%4.3f" $param].txt columns='COUNTS' rows=1-1024 prhead=no
+	for {set ibin 1} {$ibin <= $nbin} {incr ibin} {
+		
+		# Change the response files according to the current bin.
+		puts "Changing response files to: $file_prefix$ibin.wrmf and $file_prefix$ibin.warf."
+		set file_response ./data/clusters/$cluster_name/$file_prefix$ibin.wrmf
+		set file_arf ./data/clusters/$cluster_name/$file_prefix$ibin.warf
+		
+		for {set param $param_min} {$param <= $param_max} {set param [expr $param + $stepsize]} {
+			newpar $ipar & $param
+			data none
+		
+			# puts "Faking spectrum with parameter $ipar = $param."
+			# fakeit none & &y & & ./data/output/fakespec.fak & $exposuretime &
+			# Uncomment next line to use external response matrices
+			fakeit none & $file_response & $file_arf & y & & ./data/output/fakespec.fak & $exposuretime &
+			
+			puts "Dumping spectrum to: fakespec_$ibin-$ipar-$param.txt"
+			fdump infile=./data/output/fakespec.fak outfile=./data/output/fakespec_$ibin-$ipar-[format "%4.3f" $param].txt columns='COUNTS' rows=1-1024 prhead=no
 		}
+	}
 	# Write log-file for Fortran code to use
 	set fout [open "./data/output/parameters.dat" w]
-	puts $fout "$ipar $param_min $param_max $exposuretime"
+		puts $fout "Number of bins, varied parameter, minimum, maximum, exposure time. \n"
+		puts $fout "$nbin $ipar $param_min $param_max $exposuretime"
 	close $fout
 
 } else {

@@ -14,11 +14,12 @@
 // TH1F *h1 = new TH1F("h1","x distribution",100,-4,4);
 TGraph *gr = new TGraph();
 
-const Int_t nfiles = 999;
+const Int_t nfiles = 1070;
 const Int_t nheader = 10;
 const Int_t n = 101-nheader;
 
-float chisquare[nfiles],par1[nfiles],par2[nfiles],par3[nfiles],par4[nfiles];
+float chisquarelow[nfiles],parlow1[nfiles],parlow2[nfiles],parlow3[nfiles],parlow4[nfiles];
+float chisquarehigh[nfiles],parhigh1[nfiles],parhigh2[nfiles],parhigh3[nfiles],parhigh4[nfiles];
 float nf[nfiles];
 
 Double_t x[n], y[n];
@@ -37,8 +38,11 @@ void LoadData(Int_t i) {
 	else if (i >= 100 && i < 1000) {
 		in.open(Form("./data/profiles/profile_1_  %3i.txt",i));
 	}
-	else if (i >= 1000) {
-		printf("ERROR: i must be an integer between 1 and 1000!\n");
+	else if (i >= 1000 && i < 10000) {
+		in.open(Form("./data/profiles/profile_1_ %4i.txt",i));
+	}
+	else if (i >= 10000) {
+		printf("ERROR: i must be an integer between 1 and 10000!\n");
 		return;
 	}
    
@@ -86,190 +90,250 @@ double thefitfunc(double *v, double *par) {
 	return result;
 }
 
-double CalcRMS(TF1 *fit) {
-	float rms = 0.;
-	printf("Eval(4) = %f\n",fit->Eval(4));
-	printf("y(4) = %f\n",y[4]);
-	for (int i=1;i<n;++i) {
-		rms = rms + pow((fit->Eval(i) - y[i])/(0.5*(fit->Eval(i)+y[i])),2.);
-		// printf("fit->Eval(i) = %f, y[i] = %f, rms = %f\n",fit->Eval(i),y[i],rms);
-	}
-	rms = pow(rms/n,1./2.);
-	return rms;
-}
+// double CalcRMS(TF1 *fit) {
+// 	float rms = 0.;
+// 	printf("Eval(4) = %f\n",fit->Eval(4));
+// 	printf("y(4) = %f\n",y[4]);
+// 	for (int i=1;i<n;++i) {
+// 		rms = rms + pow((fit->Eval(i) - y[i])/(0.5*(fit->Eval(i)+y[i])),2.);
+// 		// printf("fit->Eval(i) = %f, y[i] = %f, rms = %f\n",fit->Eval(i),y[i],rms);
+// 	}
+// 	rms = pow(rms/n,1./2.);
+// 	return rms;
+// }
 
-void FitAllLowT() {
-	TF1 *thefit = new TF1("thefit",thefitfunc,0.,3.,4);
+void FitAll() {
+	TF1 *thefitlow = new TF1("thefitlow",thefitfunc,0.,3.,4);
+	TF1 *thefithigh = new TF1("thefithigh",thefitfunc,3.,15.,4);
 	
-	for (int i = 1;i<999;++i) {
+	for (int i = 1;i<nfiles;++i) {
 		LoadData(i);
-		gr->Fit("thefit","qR");
-		TF1 *fit = gr->GetFunction("thefit");
-		chisquare[i] = gr->Chisquare(fit);
-		par1[i] = fit->GetParameter(0);
-		par2[i] = fit->GetParameter(1);
-		par3[i] = fit->GetParameter(2);
-		par4[i] = fit->GetParameter(3);
+		gr->Fit("thefitlow","qR");
+		TF1 *fitlow = gr->GetFunction("thefitlow");
+		chisquarelow[i] = gr->Chisquare(fitlow);
+		parlow1[i] = fitlow->GetParameter(0);
+		parlow2[i] = fitlow->GetParameter(1);
+		parlow3[i] = fitlow->GetParameter(2);
+		parlow4[i] = fitlow->GetParameter(3);
+		
+		gr->Fit("thefithigh","qR");
+		TF1 *fithigh = gr->GetFunction("thefithigh");
+		chisquarehigh[i] = gr->Chisquare(fithigh);
+		parhigh1[i] = fithigh->GetParameter(0);
+		parhigh2[i] = fithigh->GetParameter(1);
+		parhigh3[i] = fithigh->GetParameter(2);
+		parhigh4[i] = fithigh->GetParameter(3);
+		
 		nf[i]=i;
 	}
 }
 
-void FitAllHighT() {
-	TF1 *thefit = new TF1("thefit",thefitfunc,3.,15.,4);
+// void FitAllLowT() {
+// 	TF1 *thefit = new TF1("thefit",thefitfunc,0.,3.,4);
+// 	
+// 	for (int i = 1;i<nfiles;++i) {
+// 		LoadData(i);
+// 		gr->Fit("thefit","qR");
+// 		TF1 *fit = gr->GetFunction("thefit");
+// 		chisquare[i] = gr->Chisquare(fit);
+// 		par1[i] = fit->GetParameter(0);
+// 		par2[i] = fit->GetParameter(1);
+// 		par3[i] = fit->GetParameter(2);
+// 		par4[i] = fit->GetParameter(3);
+// 		nf[i]=i;
+// 	}
+// }
+// 
+// void FitAllHighT() {
+// 	TF1 *thefit = new TF1("thefit",thefitfunc,3.,15.,4);
+// 	
+// 	for (int i = 1;i<nfiles;++i) {
+// 		LoadData(i);
+// 		gr->Fit("thefit","qR");
+// 		TF1 *fit = gr->GetFunction("thefit");
+// 		chisquare[i] = gr->Chisquare(fit);
+// 		par1[i] = fit->GetParameter(0);
+// 		par2[i] = fit->GetParameter(1);
+// 		par3[i] = fit->GetParameter(2);
+// 		par4[i] = fit->GetParameter(3);
+// 		nf[i]=i;
+// 	}
+// }
+
+// void FitChannel(Int_t i) {
+// 	LoadData(i);
+// 	
+// 	TCanvas *c0;
+// 	c0 = new TCanvas("c0"," ",1000,750);
+// 	
+// 	TF1 *thefit = new TF1("thefit",thefitfunc,0.,15.,4);
+// 	
+// 	gr->Fit("thefit");
+// 	TF1 *fit = gr->GetFunction("thefit");
+// 	printf("Chisquare = %f\n",gr->Chisquare(fit));
+// 
+// 	gr->SetMarkerColor(4);
+//    gr->SetMarkerStyle(2);
+// 	gr->Draw("AP");
+// 	c0->Update();
+// 	
+// 	// printf("RMS = %f\n",CalcRMS(fit));
+// }
+
+// void WriteParameters() {
+// 	FILE *fout = fopen("parout.txt","w");
+// 	fprintf(fout,"%s %13s %15s %15s %15s %15s %15s %s", "#", "channel", "chisquare", "parameter1", "parameter2", "parameter3", "parameter4","\n");
+// 	for (int i = 1;i<999;++i) {
+// 		fprintf(fout,"%15f %15f %15f %15f %15f %15f %s",nf[i], chisquare[i], par1[i], par2[i], par3[i], par4[i],"\n");
+// 	}
+// 	fclose(fout);
+// }
+
+void WriteParams() {
+	FILE *fout = fopen("params2.f90","w");
 	
-	for (int i = 1;i<999;++i) {
-		LoadData(i);
-		gr->Fit("thefit","qR");
-		TF1 *fit = gr->GetFunction("thefit");
-		chisquare[i] = gr->Chisquare(fit);
-		par1[i] = fit->GetParameter(0);
-		par2[i] = fit->GetParameter(1);
-		par3[i] = fit->GetParameter(2);
-		par4[i] = fit->GetParameter(3);
-		nf[i]=i;
+	fprintf(fout,"%s", "module params\n\n");
+	fprintf(fout,"%s", "implicit none\n\n");
+
+	fprintf(fout,"%s%i%s", "REAL,DIMENSION(",nfiles,") :: lowpar1 = (/ &\n");
+	for (int i = 1;i<nfiles-1;++i) {
+		fprintf(fout,"%15f %s",parlow1[i], ", &\n");
 	}
-}
-
-void FitChannel(Int_t i) {
-	LoadData(i);
+	fprintf(fout,"%15f %s",parlow1[nfiles], " &\n");
+	fprintf(fout,"%2s %s", "/)" ,"\n\n");
 	
-	TCanvas *c0;
-	c0 = new TCanvas("c0"," ",1000,750);
-	
-	TF1 *thefit = new TF1("thefit",thefitfunc,0.,15.,4);
-	
-	gr->Fit("thefit");
-	TF1 *fit = gr->GetFunction("thefit");
-	printf("Chisquare = %f\n",gr->Chisquare(fit));
-
-	gr->SetMarkerColor(4);
-   gr->SetMarkerStyle(2);
-	gr->Draw("AP");
-	c0->Update();
-	
-	// printf("RMS = %f\n",CalcRMS(fit));
-}
-
-void WriteParameters() {
-	FILE *fout = fopen("parout.txt","w");
-	fprintf(fout,"%s %13s %15s %15s %15s %15s %15s %s", "#", "channel", "chisquare", "parameter1", "parameter2", "parameter3", "parameter4","\n");
-	for (int i = 1;i<999;++i) {
-		fprintf(fout,"%15f %15f %15f %15f %15f %15f %s",nf[i], chisquare[i], par1[i], par2[i], par3[i], par4[i],"\n");
+	fprintf(fout,"%s%i%s", "REAL,DIMENSION(",nfiles,") :: lowpar2 = (/ &\n");
+	for (int i = 1;i<nfiles-1;++i) {
+		fprintf(fout,"%15f %s",parlow2[i], ", &\n");
 	}
+	fprintf(fout,"%15f %s",parlow2[nfiles], " &\n");
+	fprintf(fout,"%2s %s", "/)" ,"\n\n");
+	
+	fprintf(fout,"%s%i%s", "REAL,DIMENSION(",nfiles,") :: lowpar3 = (/ &\n");
+	for (int i = 1;i<nfiles-1;++i) {
+		fprintf(fout,"%15f %s",parlow3[i], ", &\n");
+	}
+	fprintf(fout,"%15f %s",parlow3[nfiles], " &\n");
+	fprintf(fout,"%2s %s", "/)" ,"\n\n");
+	
+	fprintf(fout,"%s%i%s", "REAL,DIMENSION(",nfiles,") :: lowpar4 = (/ &\n");
+	for (int i = 1;i<nfiles-1;++i) {
+		fprintf(fout,"%15f %s",parlow4[i], ", &\n");
+	}
+	fprintf(fout,"%15f %s",parlow4[nfiles], " &\n");
+	fprintf(fout,"%2s %s", "/)" ,"\n\n");
+	
+
+	fprintf(fout,"%s%i%s", "REAL,DIMENSION(",nfiles,") :: highpar1 = (/ &\n");
+	for (int i = 1;i<nfiles-1;++i) {
+		fprintf(fout,"%15f %s",parhigh1[i], ", &\n");
+	}
+	fprintf(fout,"%15f %s",parhigh1[nfiles], " &\n");
+	fprintf(fout,"%2s %s", "/)" ,"\n\n");
+	
+	fprintf(fout,"%s%i%s", "REAL,DIMENSION(",nfiles,") :: highpar2 = (/ &\n");
+	for (int i = 1;i<nfiles-1;++i) {
+		fprintf(fout,"%15f %s",parhigh2[i], ", &\n");
+	}
+	fprintf(fout,"%15f %s",parhigh2[nfiles], " &\n");
+	fprintf(fout,"%2s %s", "/)" ,"\n\n");
+	
+	fprintf(fout,"%s%i%s", "REAL,DIMENSION(",nfiles,") :: highpar3 = (/ &\n");
+	for (int i = 1;i<nfiles-1;++i) {
+		fprintf(fout,"%15f %s",parhigh3[i], ", &\n");
+	}
+	fprintf(fout,"%15f %s",parhigh3[nfiles], " &\n");
+	fprintf(fout,"%2s %s", "/)" ,"\n\n");
+	
+	fprintf(fout,"%s%i%s", "REAL,DIMENSION(",nfiles,") :: highpar4 = (/ &\n");
+	for (int i = 1;i<nfiles-1;++i) {
+		fprintf(fout,"%15f %s",parhigh4[i], ", &\n");
+	}
+	fprintf(fout,"%15f %s",parhigh4[nfiles], " &\n");
+	fprintf(fout,"%2s %s", "/)" ,"\n\n");
+	
+	fprintf(fout,"%s", "end module params");
+	
 	fclose(fout);
 }
 
-void WriteParSimple() {
-	FILE *fout = fopen("parout_simple.txt","w");
-	
-	fprintf(fout,"%15s %s", "highpar1 = (/ &" ,"\n");
-	for (int i = 1;i<998;++i) {
-		fprintf(fout,"%15f %s",par1[i], ", &\n");
-	}
-	fprintf(fout,"%15f %s",par1[999], " &\n");
-	fprintf(fout,"%15s %s", "/)" ,"\n\n");
-	
-	fprintf(fout,"%15s %s", "highpar2 = (/ &" ,"\n");
-	for (int i = 1;i<998;++i) {
-		fprintf(fout,"%15f %s",par2[i], ", &\n");
-	}
-	fprintf(fout,"%15f %s",par2[999], " &\n");
-	fprintf(fout,"%15s %s", "/)" ,"\n\n");
-	
-	fprintf(fout,"%15s %s", "highpar3 = (/ &" ,"\n");
-	for (int i = 1;i<998;++i) {
-		fprintf(fout,"%15f %s",par3[i], ", &\n");
-	}
-	fprintf(fout,"%15f %s",par3[999], " &\n");
-	fprintf(fout,"%15s %s", "/)" ,"\n\n");
-	
-	fprintf(fout,"%15s %s", "highpar4 = (/ &" ,"\n");
-	for (int i = 1;i<998;++i) {
-		fprintf(fout,"%15f %s",par4[i], ", &\n");
-	}
-	fprintf(fout,"%15f %s",par4[999], " &\n");
-	fprintf(fout,"%15s %s", "/)" ,"\n\n");
-	
-	fclose(fout);
-}
-
-void PlotResults() {
-
-	// Plot chisquare as a function of channel
-	TCanvas *c1;
-	c1 = new TCanvas("c1","Chisquare as a function of channel.",1000,750);
-	
-	TGraph *gr_chi = new TGraph(nfiles,nf,chisquare);	
-	gr_chi->SetMarkerColor(4);
-   gr_chi->SetMarkerStyle(2);
-	gr_chi->SetTitle("Chisquare as a function of channel.");
-	gr_chi->GetXaxis()->SetTitle("Channel");
-	gr_chi->GetYaxis()->SetTitle("Chisquare");
-	gr_chi->Draw("AP");
-	
-	c1->SetLogy();
-	c1->Update();
-	
-	// Plot parameter1 as a function of channel
-	TCanvas *c2;
-	c2 = new TCanvas("c2","Parameter1 as a function of channel.",1000,750);
-	
-	TGraph *gr_par1 = new TGraph(nfiles,nf,par1);	
-	gr_par1->SetMarkerColor(4);
-	   gr_par1->SetMarkerStyle(2);
-	gr_par1->SetTitle("Parameter1 as a function of channel.");
-	gr_par1->GetXaxis()->SetTitle("Channel");
-	gr_par1->GetYaxis()->SetTitle("Par1");
-	gr_par1->Draw("AP");
-	
-	//c2->SetLogy();
-	c2->Update();
-	
-	// Plot parameter2 as a function of channel
-	TCanvas *c3;
-	c3 = new TCanvas("c3","parameter2 as a function of channel.",1000,750);
-	
-	TGraph *gr_par2 = new TGraph(nfiles,nf,par2);	
-	gr_par2->SetMarkerColor(4);
-	gr_par2->SetMarkerStyle(2);
-	gr_par2->SetTitle("parameter2 as a function of channel.");
-	gr_par2->GetXaxis()->SetTitle("Channel");
-	gr_par2->GetYaxis()->SetTitle("par2");
-	gr_par2->Draw("AP");
-	
-	//c3->SetLogy();
-	c3->Update();	
-	
-	// Plot parameter3 as a function of channel
-	TCanvas *c4;
-	c4 = new TCanvas("c4","parameter3 as a function of channel.",1000,750);
-	
-	TGraph *gr_par3 = new TGraph(nfiles,nf,par3);	
-	gr_par3->SetMarkerColor(4);
-	gr_par3->SetMarkerStyle(2);
-	gr_par3->SetTitle("parameter3 as a function of channel.");
-	gr_par3->GetXaxis()->SetTitle("Channel");
-	gr_par3->GetYaxis()->SetTitle("par3");
-	gr_par3->Draw("AP");
-	
-	//c4->SetLogy();
-	c4->Update();
-	
-	// Plot parameter4 as a function of channel
-	TCanvas *c5;
-	c5 = new TCanvas("c5","parameter4 as a function of channel.",1000,750);
-	
-	TGraph *gr_par4 = new TGraph(nfiles,nf,par4);	
-	gr_par4->SetMarkerColor(4);
-	gr_par4->SetMarkerStyle(2);
-	gr_par4->SetTitle("parameter4 as a function of channel.");
-	gr_par4->GetXaxis()->SetTitle("Channel");
-	gr_par4->GetYaxis()->SetTitle("par4");
-	gr_par4->Draw("AP");
-	
-	//c5->SetLogy();
-	c5->Update();
-	
-}
+// void PlotResults() {
+// 
+// 	// Plot chisquare as a function of channel
+// 	TCanvas *c1;
+// 	c1 = new TCanvas("c1","Chisquare as a function of channel.",1000,750);
+// 	
+// 	TGraph *gr_chi = new TGraph(nfiles,nf,chisquare);	
+// 	gr_chi->SetMarkerColor(4);
+//    gr_chi->SetMarkerStyle(2);
+// 	gr_chi->SetTitle("Chisquare as a function of channel.");
+// 	gr_chi->GetXaxis()->SetTitle("Channel");
+// 	gr_chi->GetYaxis()->SetTitle("Chisquare");
+// 	gr_chi->Draw("AP");
+// 	
+// 	c1->SetLogy();
+// 	c1->Update();
+// 	
+// 	// Plot parameter1 as a function of channel
+// 	TCanvas *c2;
+// 	c2 = new TCanvas("c2","Parameter1 as a function of channel.",1000,750);
+// 	
+// 	TGraph *gr_par1 = new TGraph(nfiles,nf,par1);	
+// 	gr_par1->SetMarkerColor(4);
+// 	   gr_par1->SetMarkerStyle(2);
+// 	gr_par1->SetTitle("Parameter1 as a function of channel.");
+// 	gr_par1->GetXaxis()->SetTitle("Channel");
+// 	gr_par1->GetYaxis()->SetTitle("Par1");
+// 	gr_par1->Draw("AP");
+// 	
+// 	//c2->SetLogy();
+// 	c2->Update();
+// 	
+// 	// Plot parameter2 as a function of channel
+// 	TCanvas *c3;
+// 	c3 = new TCanvas("c3","parameter2 as a function of channel.",1000,750);
+// 	
+// 	TGraph *gr_par2 = new TGraph(nfiles,nf,par2);	
+// 	gr_par2->SetMarkerColor(4);
+// 	gr_par2->SetMarkerStyle(2);
+// 	gr_par2->SetTitle("parameter2 as a function of channel.");
+// 	gr_par2->GetXaxis()->SetTitle("Channel");
+// 	gr_par2->GetYaxis()->SetTitle("par2");
+// 	gr_par2->Draw("AP");
+// 	
+// 	//c3->SetLogy();
+// 	c3->Update();	
+// 	
+// 	// Plot parameter3 as a function of channel
+// 	TCanvas *c4;
+// 	c4 = new TCanvas("c4","parameter3 as a function of channel.",1000,750);
+// 	
+// 	TGraph *gr_par3 = new TGraph(nfiles,nf,par3);	
+// 	gr_par3->SetMarkerColor(4);
+// 	gr_par3->SetMarkerStyle(2);
+// 	gr_par3->SetTitle("parameter3 as a function of channel.");
+// 	gr_par3->GetXaxis()->SetTitle("Channel");
+// 	gr_par3->GetYaxis()->SetTitle("par3");
+// 	gr_par3->Draw("AP");
+// 	
+// 	//c4->SetLogy();
+// 	c4->Update();
+// 	
+// 	// Plot parameter4 as a function of channel
+// 	TCanvas *c5;
+// 	c5 = new TCanvas("c5","parameter4 as a function of channel.",1000,750);
+// 	
+// 	TGraph *gr_par4 = new TGraph(nfiles,nf,par4);	
+// 	gr_par4->SetMarkerColor(4);
+// 	gr_par4->SetMarkerStyle(2);
+// 	gr_par4->SetTitle("parameter4 as a function of channel.");
+// 	gr_par4->GetXaxis()->SetTitle("Channel");
+// 	gr_par4->GetYaxis()->SetTitle("par4");
+// 	gr_par4->Draw("AP");
+// 	
+// 	//c5->SetLogy();
+// 	c5->Update();
+// 	
+// }
 
 

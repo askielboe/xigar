@@ -71,7 +71,7 @@ if {[exec ls ./data/output/] == ""} then {
 			# fakeit none & $file_response & $file_arf & y & & ./data/output/fakespec.fak & $exposuretime &
 			
 			puts "Dumping spectrum to: fakespec-$ipar-$param.txt"
-			fdump infile=./data/output/fakespec.fak outfile=./data/output/fakespec-$ipar-[format "%4.3f" $param].txt columns='COUNTS' rows=1-1070 prhead=no
+			fdump infile=./data/output/fakespec.fak outfile=./data/output/fakespec_$ipar-[format "%4.3f" $param].txt columns='COUNTS' rows=1-1070 prhead=no
 			
 			# puts "Dumping spectrum to: fakespec_$ibin-$ipar-$param.txt"
 			# fdump infile=./data/output/fakespec.fak outfile=./data/output/fakespec_$ibin-$ipar-[format "%4.3f" $param].txt columns='COUNTS' rows=1-1070 prhead=no
@@ -79,7 +79,7 @@ if {[exec ls ./data/output/] == ""} then {
 	#}
 	# Write log-file for Fortran code to use
 	set fout [open "./data/output/parameters.dat" w]
-		puts $fout "Varied parameter, minimum, maximum, exposure time. \n"
+		#puts $fout "Varied parameter, minimum, maximum, exposure time. \n"
 		puts $fout "$ipar $param_min $param_max $exposuretime"
 	close $fout
 

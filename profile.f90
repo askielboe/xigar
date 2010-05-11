@@ -16,7 +16,7 @@ REAL						:: param_min, param_max, exposure
 
 !-------------------------------------------------------------------
 
-INTEGER,PARAMETER								:: nchannels=1024 
+INTEGER,PARAMETER								:: nchannels=1070 
 INTEGER,DIMENSION(nspectra,nchannels)	:: channel, count
 INTEGER											:: i, n, ichannel
 REAL,DIMENSION(nspectra)					:: params

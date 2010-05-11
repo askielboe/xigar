@@ -196,28 +196,28 @@ void WriteParams() {
 	fprintf(fout,"%s", "implicit none\n\n");
 
 	fprintf(fout,"%s%i%s", "REAL,DIMENSION(",nfiles,") :: lowpar1 = (/ &\n");
-	for (int i = 1;i<nfiles-1;++i) {
+	for (int i = 1;i<nfiles;++i) {
 		fprintf(fout,"%15f %s",parlow1[i], ", &\n");
 	}
 	fprintf(fout,"%15f %s",parlow1[nfiles], " &\n");
 	fprintf(fout,"%2s %s", "/)" ,"\n\n");
 	
 	fprintf(fout,"%s%i%s", "REAL,DIMENSION(",nfiles,") :: lowpar2 = (/ &\n");
-	for (int i = 1;i<nfiles-1;++i) {
+	for (int i = 1;i<nfiles;++i) {
 		fprintf(fout,"%15f %s",parlow2[i], ", &\n");
 	}
 	fprintf(fout,"%15f %s",parlow2[nfiles], " &\n");
 	fprintf(fout,"%2s %s", "/)" ,"\n\n");
 	
 	fprintf(fout,"%s%i%s", "REAL,DIMENSION(",nfiles,") :: lowpar3 = (/ &\n");
-	for (int i = 1;i<nfiles-1;++i) {
+	for (int i = 1;i<nfiles;++i) {
 		fprintf(fout,"%15f %s",parlow3[i], ", &\n");
 	}
 	fprintf(fout,"%15f %s",parlow3[nfiles], " &\n");
 	fprintf(fout,"%2s %s", "/)" ,"\n\n");
 	
 	fprintf(fout,"%s%i%s", "REAL,DIMENSION(",nfiles,") :: lowpar4 = (/ &\n");
-	for (int i = 1;i<nfiles-1;++i) {
+	for (int i = 1;i<nfiles;++i) {
 		fprintf(fout,"%15f %s",parlow4[i], ", &\n");
 	}
 	fprintf(fout,"%15f %s",parlow4[nfiles], " &\n");
@@ -225,28 +225,28 @@ void WriteParams() {
 	
 
 	fprintf(fout,"%s%i%s", "REAL,DIMENSION(",nfiles,") :: highpar1 = (/ &\n");
-	for (int i = 1;i<nfiles-1;++i) {
+	for (int i = 1;i<nfiles;++i) {
 		fprintf(fout,"%15f %s",parhigh1[i], ", &\n");
 	}
 	fprintf(fout,"%15f %s",parhigh1[nfiles], " &\n");
 	fprintf(fout,"%2s %s", "/)" ,"\n\n");
 	
 	fprintf(fout,"%s%i%s", "REAL,DIMENSION(",nfiles,") :: highpar2 = (/ &\n");
-	for (int i = 1;i<nfiles-1;++i) {
+	for (int i = 1;i<nfiles;++i) {
 		fprintf(fout,"%15f %s",parhigh2[i], ", &\n");
 	}
 	fprintf(fout,"%15f %s",parhigh2[nfiles], " &\n");
 	fprintf(fout,"%2s %s", "/)" ,"\n\n");
 	
 	fprintf(fout,"%s%i%s", "REAL,DIMENSION(",nfiles,") :: highpar3 = (/ &\n");
-	for (int i = 1;i<nfiles-1;++i) {
+	for (int i = 1;i<nfiles;++i) {
 		fprintf(fout,"%15f %s",parhigh3[i], ", &\n");
 	}
 	fprintf(fout,"%15f %s",parhigh3[nfiles], " &\n");
 	fprintf(fout,"%2s %s", "/)" ,"\n\n");
 	
 	fprintf(fout,"%s%i%s", "REAL,DIMENSION(",nfiles,") :: highpar4 = (/ &\n");
-	for (int i = 1;i<nfiles-1;++i) {
+	for (int i = 1;i<nfiles;++i) {
 		fprintf(fout,"%15f %s",parhigh4[i], ", &\n");
 	}
 	fprintf(fout,"%15f %s",parhigh4[nfiles], " &\n");

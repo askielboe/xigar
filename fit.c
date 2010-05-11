@@ -190,7 +190,7 @@ void FitAll() {
 // }
 
 void WriteParams() {
-	FILE *fout = fopen("params2.f90","w");
+	FILE *fout = fopen("params.f90","w");
 	
 	fprintf(fout,"%s", "module params\n\n");
 	fprintf(fout,"%s", "implicit none\n\n");

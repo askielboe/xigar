@@ -1,22 +1,31 @@
 #include "Riostream.h"
 #include "TFile.h"
-#include "TH1F.h"
+//#include "TH1F.h"
 #include "TF1.h"
-#include "TH2F.h"
-#include "TCanvas.h"
-#include "TNtuple.h"
+//#include "TH2F.h"
+//#include "TCanvas.h"
+//#include "TNtuple.h"
 #include "TGraph.h"
 #include "TMath.h"
-// #include "math.h"
-// #include "TRandom.h"
+#include "xspec_params.h"
+//#include "math.h"
+//#include "TRandom.h"
 
 // TNtuple *ntuple = new TNtuple("ntuple","data from ascii file","x:y");
 // TH1F *h1 = new TH1F("h1","x distribution",100,-4,4);
 TGraph *gr = new TGraph();
 
-const Int_t nfiles = 1070;
+// Define the break in fit here (two different fits for low temperatures and high temperatures).
+// const Float_t param_break = 3.;
+
+// Number of header lines.
 const Int_t nheader = 10;
+
+// const Int_t nfiles = 1070;
+
+// const Int_t n = (nspectra+1)-nheader;
 const Int_t n = 101-nheader;
+const Int_t nfiles = nchannels;
 
 float chisquarelow[nfiles],parlow1[nfiles],parlow2[nfiles],parlow3[nfiles],parlow4[nfiles];
 float chisquarehigh[nfiles],parhigh1[nfiles],parhigh2[nfiles],parhigh3[nfiles],parhigh4[nfiles];
@@ -24,22 +33,29 @@ float nf[nfiles];
 
 Double_t x[n], y[n];
 
+// void LoadParameters() {
+// 	ifstream in;
+// 	in.open("xspec_params.c");
+// 	in >> temp_low >> temp_high >> exposure >> nfiles >> nspectra;
+// 	in.close();
+// }
+
 void LoadData(Int_t i) {
 	
    ifstream in;
 
 	if (i < 10) {
-		in.open(Form("./data/profiles/profile_1_    %1i.txt",i));
+		in.open(Form("./data/profiles/profile_    %1i.txt",i));
 		// printf("Opening file profile_1_    %1i.txt\n",i);
 	}
 	else if (i >= 10 && i < 100) {
-		in.open(Form("./data/profiles/profile_1_   %2i.txt",i));
+		in.open(Form("./data/profiles/profile_   %2i.txt",i));
 	}
 	else if (i >= 100 && i < 1000) {
-		in.open(Form("./data/profiles/profile_1_  %3i.txt",i));
+		in.open(Form("./data/profiles/profile_  %3i.txt",i));
 	}
 	else if (i >= 1000 && i < 10000) {
-		in.open(Form("./data/profiles/profile_1_ %4i.txt",i));
+		in.open(Form("./data/profiles/profile_ %4i.txt",i));
 	}
 	else if (i >= 10000) {
 		printf("ERROR: i must be an integer between 1 and 10000!\n");
@@ -103,8 +119,9 @@ double thefitfunc(double *v, double *par) {
 // }
 
 void FitAll() {
-	TF1 *thefitlow = new TF1("thefitlow",thefitfunc,0.,3.,4);
-	TF1 *thefithigh = new TF1("thefithigh",thefitfunc,3.,15.,4);
+	
+	TF1 *thefitlow = new TF1("thefitlow",thefitfunc,param_min,param_break,4);
+	TF1 *thefithigh = new TF1("thefithigh",thefitfunc,param_break,param_max,4);
 	
 	for (int i = 1;i<nfiles;++i) {
 		LoadData(i);

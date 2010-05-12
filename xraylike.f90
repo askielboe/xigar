@@ -1,5 +1,6 @@
 program test
 
+use xspec_params
 use params
 use sphvol
 
@@ -9,7 +10,7 @@ implicit none
 !REAL,DIMENSION(nbins)		::	highpar1, highpar2, highpar3, highpar4
 
 INTEGER						:: i, j, idummy, ia, is
-INTEGER,PARAMETER			::	N = 6, nbins = 1069 ! N = number of shells, nbins = number of bins 
+INTEGER,PARAMETER			::	N = 6, nbins = nchannels ! N = number of shells, nbins = number of bins 
 ! I cut this off at the last bin since I get some weird numbers there.
 ! Other than that ot works fine.
 REAL,DIMENSION(nbins)	::	subspectrum, rdummy
@@ -34,7 +35,7 @@ beta = 1.
 
 ! -------------------------------- CONSTANT PARAMETERS ------------------------------- !
 ! exp (scalar):	Constant spectrum normalization (exposure). !exp = 4179.6
-exp = 4179600.2
+!exp = 4179600.2
 !exp = 0.00001
 
 ! ----------------------------------- MAIN PROGRAM ----------------------------------- !
@@ -171,15 +172,15 @@ function usynthspec(T, rho) ! Calculate unit-volume synthetic spectrum for given
 	REAL,DIMENSION(nbins)	:: usynthspec
 	INTEGER						:: i
 
-	if (T < 3.) then ! Limits: Lowpar: t = 0..3 keV, Highpar: t = 3..15 keV
+	if (T < param_break) then ! Limits: Lowpar: t = 0..3 keV, Highpar: t = 3..15 keV
 		do i = 1,nbins
 			usynthspec(i) = lowpar1(i) * T**3. + lowpar2(i) * T**2. + lowpar3(i)*T + lowpar4(i)
-			usynthspec(i) = e**usynthspec(i) / exp * rho
+			usynthspec(i) = e**usynthspec(i) * rho
 		end do
-	else if (T >= 3.) then
+	else if (T >= param_break) then
 		do i = 1,nbins
 			usynthspec(i) = highpar1(i) * T**3. + highpar2(i) * T**2. + highpar3(i)*T + highpar4(i)
-			usynthspec(i) = e**usynthspec(i) / exp * rho
+			usynthspec(i) = e**usynthspec(i) * rho
 		end do
 	end if
 end function usynthspec

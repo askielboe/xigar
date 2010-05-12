@@ -15,6 +15,9 @@ chatter 5
 	set param_min 0.1	; # Decimals are limited to 3 places,
 	set param_max 15.	; # this can be changed, but then has to be changed in the fortran code as well.
 	set nspectra 100.	; # Note that we actually get nspectra+1 spectra!
+	set nchannels 1070
+	
+	set param_break 3.; # Set the value of the break between fits in ROOT.
 	
 	# Model Parameters
 	set temp 1.
@@ -23,7 +26,7 @@ chatter 5
 	set norm 1.
 	
 	# Fakeit Parameters
-	set exposuretime 4179600.2
+	set exposure 4179600.2
 	
 # END > DEFINITIONS                                         #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -43,7 +46,7 @@ if {[exec ls ./data/output/] == ""} then {
 		source ./config/$cluster_name.tcl
 	
 	# Note that this way we actually get nspectra+1 spectra!
-	set stepsize [expr ($param_max-$param_min)/$nspectra]
+	set stepsize [expr ($param_max-$param_min)/($nspectra)]
 	
 	# Initiate the model (ignoring parameters for now)
 	model mekal & $temp & $nH & $abundance & $redshift & $switch & $norm &
@@ -59,28 +62,39 @@ if {[exec ls ./data/output/] == ""} then {
 		# set file_response ./data/clusters/$cluster_name/$file_prefix$ibin.wrmf
 		# set file_arf ./data/clusters/$cluster_name/$file_prefix$ibin.warf
 		
-		dummy 0.3 11. 1070 lin
+		dummy 0.3 11. $nchannels lin
 		
 		for {set param $param_min} {$param <= $param_max} {set param [expr $param + $stepsize]} {
 			newpar $ipar & $param
 			data none
 		
 			# puts "Faking spectrum with parameter $ipar = $param."
-			fakeit none & &y & & ./data/output/fakespec.fak & $exposuretime &
+			fakeit none & &y & & ./data/output/fakespec.fak & $exposure &
 			# Uncomment next line to use external response matrices
-			# fakeit none & $file_response & $file_arf & y & & ./data/output/fakespec.fak & $exposuretime &
+			# fakeit none & $file_response & $file_arf & y & & ./data/output/fakespec.fak & $exposure &
 			
-			puts "Dumping spectrum to: fakespec-$ipar-$param.txt"
-			fdump infile=./data/output/fakespec.fak outfile=./data/output/fakespec_$ipar-[format "%4.3f" $param].txt columns='COUNTS' rows=1-1070 prhead=no
+			puts "Dumping spectrum to: fakespec_$param.txt"
+			fdump infile=./data/output/fakespec.fak outfile=./data/output/fakespec_[format "%4.3f" $param].txt columns='COUNTS' rows=1-$nchannels prhead=no
 			
 			# puts "Dumping spectrum to: fakespec_$ibin-$ipar-$param.txt"
 			# fdump infile=./data/output/fakespec.fak outfile=./data/output/fakespec_$ibin-$ipar-[format "%4.3f" $param].txt columns='COUNTS' rows=1-1070 prhead=no
 		}
 	#}
-	# Write log-file for Fortran code to use
-	set fout [open "./data/output/parameters.dat" w]
+	# Write FORTRAN xspec-parameters file
+	set fout [open "xspec_params.f90" w]
 		#puts $fout "Varied parameter, minimum, maximum, exposure time. \n"
-		puts $fout "$ipar $param_min $param_max $exposuretime"
+		puts $fout "module xspec_params"
+		puts $fout "implicit none"
+		puts $fout "INTEGER,PARAMETER :: nchannels=$nchannels, nspectra=$nspectra"
+		puts $fout "REAL,PARAMETER :: param_min=$param_min, param_max=$param_max, exposure=$exposure, param_break=$param_break"
+		puts $fout "end module xspec_params"
+	close $fout
+	
+	# Write C xspec-parameters file
+	set fout [open "xspec_params.h" w]
+		#puts $fout "Varied parameter, minimum, maximum, exposure time. \n"
+		puts $fout "const Float_t param_min=$param_min, param_max=$param_max, param_break=$param_break;"
+		puts $fout "const Int_t exposure=$exposure, nchannels=$nchannels, nspectra=$nspectra;"
 	close $fout
 
 } else {

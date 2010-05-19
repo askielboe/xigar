@@ -1,62 +1,27 @@
 module xigar
 
-use xspec_params
-use params
-use sphvol
-
 implicit none
 
 !REAL,DIMENSION(nbins)		::	lowpar1, lowpar2, lowpar3, lowpar4
 !REAL,DIMENSION(nbins)		::	highpar1, highpar2, highpar3, highpar4
 
-INTEGER						:: i, j, idummy, ia, is
-INTEGER,PARAMETER			::	N = 6, nbins = nchannels ! N = number of shells, nbins = number of bins 
+!INTEGER						:: i, j, idummy, ia, is
+!INTEGER,PARAMETER			::	N = 6, nbins = nchannels ! N = number of shells, nbins = number of bins 
 ! I cut this off at the last bin since I get some weird numbers there.
 ! Other than that ot works fine.
-REAL,DIMENSION(nbins)	::	subspectrum, rdummy
-REAL,DIMENSION(N)			:: a, T, rho
-REAL,DIMENSION(N,N)		:: V
-REAL,DIMENSION(N,nbins)	:: synthspec, prospec, rspec
-REAL							:: chisquare
-REAL							:: exp, alpha, beta
-REAL,PARAMETER				:: e = 2.71828183, Pi = 3.1415926535897932385
-
-! --------------------------------- FITTING PARAMETERS ------------------------------- !
-! a (1D array):	Radii for the observational annuli.
-a = (/ 39.6749, 60.9293, 80.7667, 102.021, 124.692, 153.032 /)
-! T (1D array):	Temperature profile for the cluster (in annuli bins).
-T = (/ 8., 10., 8., 6., 4., 1. /) ! keV
-! rho (1D array):	Density profile for the cluster (in annuli bins).
-rho = (/ 10., 9., 7., 4., 1., 0.1 /)
-! alpha (scalar):	Axis-ratio runction parameter.
-alpha = 10.
-! beta (scalar):	Axis-ratio runction parameter.
-beta = 1.
+! REAL,DIMENSION(nbins)	::	subspectrum, rdummy
+! REAL,DIMENSION(N)			:: a, T, rho
+! REAL,DIMENSION(N,N)		:: V
+! REAL,DIMENSION(N,nbins)	:: synthspec, prospec, rspec
+! REAL							:: chisquare
+! REAL							:: exp, alpha, beta
+! REAL,PARAMETER				:: e = 2.71828183, Pi = 3.1415926535897932385
 
 ! -------------------------------- CONSTANT PARAMETERS ------------------------------- !
 ! exp (scalar):	Constant spectrum normalization (exposure). !exp = 4179.6
 !exp = 4179600.2
 !exp = 0.00001
 
-! ----------------------------------- MAIN PROGRAM ----------------------------------- !
-
-! 
-! ! Calculate synthetic-(unit-volume)-spectra
-! do i = 1, N
-! 	synthspec(i,:) = usynthspec(T(i),rho(i))
-! end do
-! 
-! ! Calculate volume-elements
-! V = vol(N, alpha, beta, a)
-! 
-! ! Do the projection (YEAH!)
-! do i=1,N
-! prospec(i,:) = 0.
-! 	do j=i,N
-! 		prospec(i,:) = prospec(i,:) + usynthspec(T(j),rho(j))*V(i,j)
-! 	end do
-! end do
-! 
 
 ! -------------------------------- CALCULATE CHI-SQUARE ----------------------------- !
 
@@ -169,36 +134,67 @@ beta = 1.
 
 contains
 
-function xraylike()
+function xraylike(Params)
 
-! REAL,intent(in) :: HERE GOES THE PARAMETERS
+	use xspec_params
+	use xigar_params
+	use sphvol
 
-REAL :: xraylike
+	REAL,DIMENSION(7),intent(in) :: Params
+	REAL :: xraylike
 
-! Calculate synthetic-(unit-volume)-spectra
-do i = 1, N
-	synthspec(i,:) = usynthspec(T(i),rho(i))
-end do
+	INTEGER		:: i,j
+	INTEGER,PARAMETER			::	N = 6, nbins = nchannels
+	REAL,DIMENSION(N,nbins)	:: synthspec, prospec, rspec
+	REAL,DIMENSION(nbins)	::	subspectrum, rdummy
+	REAL,DIMENSION(N)			:: a, T, rho
+	REAL,DIMENSION(N,N)		:: V
+	REAL							:: exp, alpha, beta
 
-! Calculate volume-elements
-V = vol(N, alpha, beta, a)
+	! --------------------------------- FITTING PARAMETERS ------------------------------- !
+	! a (1D array):	Radii for the observational annuli.
+	a = (/ 39.6749, 60.9293, 80.7667, 102.021, 124.692, 153.032 /)
+	! T (1D array):	Temperature profile for the cluster (in annuli bins).
+	T = (/ 8., 10., 8., 6., 4., 1. /) ! keV
+	! rho (1D array):	Density profile for the cluster (in annuli bins).
+	rho = (/ 10., 9., 7., 4., 1., 0.1 /)
+	! alpha (scalar):	Axis-ratio runction parameter.
+	alpha = 10.
+	! beta (scalar):	Axis-ratio runction parameter.
+	beta = 1.
 
-! Do the projection (YEAH!)
-do i=1,N
-prospec(i,:) = 0.
-	do j=i,N
-		prospec(i,:) = prospec(i,:) + usynthspec(T(j),rho(j))*V(i,j)
+	! Calculate synthetic-(unit-volume)-spectra
+	do i = 1, N
+		synthspec(i,:) = usynthspec(T(i),rho(i))
 	end do
-end do
 
-xraylike = 1.
+	! Calculate volume-elements
+	V = vol(N, alpha, beta, a)
+
+	! Do the projection (YEAH!)
+	do i=1,N
+		prospec(i,:) = 0.
+		do j=i,N
+			prospec(i,:) = prospec(i,:) + usynthspec(T(j),rho(j))*V(i,j)
+		end do
+	end do
+
+	xraylike = 1.
 
 end function xraylike
 
 function usynthspec(T, rho) ! Calculate unit-volume synthetic spectrum for given temperature and density
+
+	use xspec_params
+	use xigar_params
+	use sphvol
+
+	REAL							:: exp, alpha, beta
+	INTEGER,PARAMETER			::	N = 6, nbins = nchannels
 	REAL,intent(in)			:: T, rho
 	REAL,DIMENSION(nbins)	:: usynthspec
 	INTEGER						:: i
+	REAL,PARAMETER				:: e = 2.71828183, Pi = 3.1415926535897932385
 
 	if (T < param_break) then ! Limits: Lowpar: t = 0..3 keV, Highpar: t = 3..15 keV
 		do i = 1,nbins

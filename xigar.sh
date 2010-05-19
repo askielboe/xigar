@@ -48,6 +48,7 @@ root -l << EOF
 .L fit.c+
 FitAll()
 WriteParams()
+.q
 EOF
 
 echo 'xigar run completed'

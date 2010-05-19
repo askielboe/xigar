@@ -207,9 +207,9 @@ void FitAll() {
 // }
 
 void WriteParams() {
-	FILE *fout = fopen("params.f90","w");
+	FILE *fout = fopen("xigar_params.f90","w");
 	
-	fprintf(fout,"%s", "module params\n\n");
+	fprintf(fout,"%s", "module xigar_params\n\n");
 	fprintf(fout,"%s", "implicit none\n\n");
 
 	fprintf(fout,"%s%i%s", "REAL,DIMENSION(",nfiles,") :: lowpar1 = (/ &\n");
@@ -269,7 +269,7 @@ void WriteParams() {
 	fprintf(fout,"%15f %s",parhigh4[nfiles], " &\n");
 	fprintf(fout,"%2s %s", "/)" ,"\n\n");
 	
-	fprintf(fout,"%s", "end module params");
+	fprintf(fout,"%s", "end module xigar_params");
 	
 	fclose(fout);
 }

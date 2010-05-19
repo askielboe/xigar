@@ -12,8 +12,8 @@ chatter 5
 	
 	# Parameter to vary
 	set ipar 1			; # 1: Temp, 2: nH, 3: Abundance, 4: redshift, 6: norm
-	set param_min 0.1	; # Decimals are limited to 3 places,
-	set param_max 15.	; # this can be changed, but then has to be changed in the fortran code as well.
+	set param_min 0.3	; # Decimals are limited to 3 places,
+	set param_max 11.	; # this can be changed, but then has to be changed in the fortran code as well.
 	set nspectra 100.	; # Note that we actually get nspectra+1 spectra!
 	set nchannels 1070
 	

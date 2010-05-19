@@ -1,7 +1,11 @@
 *.o
+*.h
 *.d
 *.so
 *.out
 *.exe
 *.mod
 data/*
+xspec_params.f90
+xigar_params.f90
+params.f90

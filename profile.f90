@@ -1,6 +1,6 @@
 program profile
 
-use xspec_params
+use xigar_params
 
 implicit none
 

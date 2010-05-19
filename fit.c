@@ -7,7 +7,7 @@
 //#include "TNtuple.h"
 #include "TGraph.h"
 #include "TMath.h"
-#include "xspec_params.h"
+#include "xigar_params.h"
 //#include "math.h"
 //#include "TRandom.h"
 
@@ -35,7 +35,7 @@ Double_t x[n], y[n];
 
 // void LoadParameters() {
 // 	ifstream in;
-// 	in.open("xspec_params.c");
+// 	in.open("xigar_params.c");
 // 	in >> temp_low >> temp_high >> exposure >> nfiles >> nspectra;
 // 	in.close();
 // }
@@ -207,9 +207,9 @@ void FitAll() {
 // }
 
 void WriteParams() {
-	FILE *fout = fopen("xigar_params.f90","w");
+	FILE *fout = fopen("fit_params.f90","w");
 	
-	fprintf(fout,"%s", "module xigar_params\n\n");
+	fprintf(fout,"%s", "module fit_params\n\n");
 	fprintf(fout,"%s", "implicit none\n\n");
 
 	fprintf(fout,"%s%i%s", "REAL,DIMENSION(",nfiles,") :: lowpar1 = (/ &\n");
@@ -269,7 +269,7 @@ void WriteParams() {
 	fprintf(fout,"%15f %s",parhigh4[nfiles], " &\n");
 	fprintf(fout,"%2s %s", "/)" ,"\n\n");
 	
-	fprintf(fout,"%s", "end module xigar_params");
+	fprintf(fout,"%s", "end module fit_params");
 	
 	fclose(fout);
 }

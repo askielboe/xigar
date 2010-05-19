@@ -38,7 +38,7 @@ EOF
 
 # Run FORTRAN to generate PROFILE
 echo 'Running FORTRAN profile.f90...'
-gfortran xspec_params.f90 profile.f90
+gfortran xigar_params.f90 profile.f90
 ./a.out
 
 # Run ROOT to generate fit PARAMETERS
@@ -52,10 +52,11 @@ WriteParams()
 EOF
 
 echo 'xigar run completed'
-echo 'Fit parameters saved to: params.f90'
+echo 'Fit parameters saved to: fit_params.f90'
 
 # Clean up!
 rm *.out
 rm *.mod
 rm *.so
 rm *.d
+rm *.h

@@ -16,3 +16,10 @@ set abundance 0.20
 
 # GALACTIC ABSORBTION
 set Hcolumn 0.026
+
+# Radii of annuli
+set r [list 39.6749 60.9293 80.7667 102.021 124.692 153.032]
+
+# Number of annuli
+set N [llength $r]
+

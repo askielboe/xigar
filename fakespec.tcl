@@ -81,17 +81,29 @@ if {[exec ls ./data/output/] == ""} then {
 		}
 	#}
 	# Write FORTRAN xspec-parameters file
-	set fout [open "xspec_params.f90" w]
+	set fout [open "xigar_params.f90" w]
 		#puts $fout "Varied parameter, minimum, maximum, exposure time. \n"
-		puts $fout "module xspec_params"
+		puts $fout "module xigar_params"
 		puts $fout "implicit none"
-		puts $fout "INTEGER,PARAMETER :: nchannels=$nchannels, nspectra=$nspectra"
+		puts $fout "INTEGER,PARAMETER :: nchannels=$nchannels, nspectra=$nspectra, nannuli=$N"
 		puts $fout "REAL,PARAMETER :: param_min=$param_min, param_max=$param_max, exposure=$exposure, param_break=$param_break"
-		puts $fout "end module xspec_params"
+		puts $fout "REAL,DIMENSION($N) :: rannuli= (/ &"
+		set i 1
+		foreach item $r {
+			if {$i < $N} {
+				puts $fout "$item, &"
+			}
+			if {$i == $N} {
+				puts $fout "$item &"
+			}
+			incr i			
+		}
+		puts $fout "/)"
+		puts $fout "end module xigar_params"
 	close $fout
 	
 	# Write C xspec-parameters file
-	set fout [open "xspec_params.h" w]
+	set fout [open "xigar_params.h" w]
 		#puts $fout "Varied parameter, minimum, maximum, exposure time. \n"
 		puts $fout "const Float_t param_min=$param_min, param_max=$param_max, param_break=$param_break;"
 		puts $fout "const Int_t exposure=$exposure, nchannels=$nchannels, nspectra=$nspectra;"

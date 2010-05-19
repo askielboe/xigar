@@ -2,9 +2,6 @@ module xigar
 
 implicit none
 
-!REAL,DIMENSION(nbins)		::	lowpar1, lowpar2, lowpar3, lowpar4
-!REAL,DIMENSION(nbins)		::	highpar1, highpar2, highpar3, highpar4
-
 !INTEGER						:: i, j, idummy, ia, is
 !INTEGER,PARAMETER			::	N = 6, nbins = nchannels ! N = number of shells, nbins = number of bins 
 ! I cut this off at the last bin since I get some weird numbers there.
@@ -22,146 +19,99 @@ implicit none
 !exp = 4179600.2
 !exp = 0.00001
 
-
-! -------------------------------- CALCULATE CHI-SQUARE ----------------------------- !
-
-! ! Read in real spectrum
-! do i=1,N
-! 	open(1,file='test.out.real',form='formatted')
-! 	do j = 1,nbins
-! 		read(1,'(i4, f15.0)') idummy, rspec(i,j)
-! 	end do
-! 	close(1)
-! end do
-! 
-! chisquare = 0.
-! do i=1,N
-! 	do j=1,nbins
-! 		chisquare = chisquare + ( (prospec(i,j)-rspec(i,j)) / sqrt(prospec(i,j)) )**2 
-! 	end do
-! end do
-! 
-! write(*,*) chisquare
-
-! Subtract the two spectra and calculate quality of fit
-
-! Return overall chi-square to cosmomc
-
-! ------------------------------- OUTPUT (FOR DEBUGGING) ---------------------------- !
-! open(1,file='sphvol.out',form='formatted')
-! do ia = 1,N
-! 	do is = 1,N
-! 		if (is >= ia) write(*,'(i4,i4,e15.5)') ia, is, vols(ia,is)
-! 	end do
-! end do
-! close(1)
-
-! Polynomial
-! double result = par[0] * pow(v[0],3.) + par[1] * pow(v[0],2.) + par[2]*v[0] + par[3];
-
-! do i=1,N
-! 	open(1,file='prospec' // str(i) // '.out',form='formatted')
-! 	do j = 1,nbins
-! 		write(1,'(i3, a1, e15.4)') j, ' ', prospec(i,j)
-! 	end do
-! 	close(1)
-! end do
-
-! !Write out prospec
-! open(1,file='prospec1.out',form='formatted')
-! do i = 1,nbins
-! 	write(1,'(i4, a1, e15.4)') i, ' ', prospec(1,i)
-! end do
-! close(1)
-! 
-! open(1,file='prospec2.out',form='formatted')
-! do i = 1,nbins
-! 	write(1,'(i4, a1, e15.4)') i, ' ', prospec(2,i)
-! end do
-! close(1)
-! 
-! open(1,file='prospec3.out',form='formatted')
-! do i = 1,nbins
-! 	write(1,'(i4, a1, e15.4)') i, ' ', prospec(3,i)
-! end do
-! close(1)
-! 
-! open(1,file='prospec4.out',form='formatted')
-! do i = 1,nbins
-! 	write(1,'(i4, a1, e15.4)') i, ' ', prospec(4,i)
-! end do
-! close(1)
-! 
-! open(1,file='prospec5.out',form='formatted')
-! do i = 1,nbins
-! 	write(1,'(i4, a1, e15.4)') i, ' ', prospec(5,i)
-! end do
-! close(1)
-! 
-! open(1,file='prospec6.out',form='formatted')
-! do i = 1,nbins
-! 	write(1,'(i4, a1, e15.4)') i, ' ', prospec(6,i)
-! end do
-! close(1)
-
-! i = 1
-! j = 4
-! rdummy = usynthspec(T(j),rho(j))*V(i,j)
-! open(1,file='usynthspec4.out',form='formatted')
-! do i = 1,nbins
-! 	write(1,'(i3, a1, e15.4)') i, ' ', rdummy(i)
-! end do
-! close(1)
-
-
-
-!write(*,*) rspec
-
-! ! Subtract synthetic and real spectrum and calculate chi-square to constant function
-! do i = 1,nbins
-! 	subspectrum(i) = 2.*(usynthspec(i)-rspec(i))/(usynthspec(i)+rspec(i))
-! end do
-! 
-! open(1,file='test.out.sub',form='formatted')
-! do i = 1,nbins
-! 	write(1,'(i3, a1, f15.4)') i, ' ', subspectrum(i)
-! end do
-! close(1)
-
-!write(*,*) 'It runs!'
-
-! -------------------------------------- FUNCTIONS ----------------------------------- !
+! ! T (1D array):	Temperature profile for the cluster (in annuli bins).
+! T = (/ 8., 10., 8., 6., 4., 1. /) ! keV
+! ! rho (1D array):	Density profile for the cluster (in annuli bins).
+! rho = (/ 10., 9., 7., 4., 1., 0.1 /)
+! ! alpha (scalar):	Axis-ratio runction parameter.
+! alpha = 10.
+! ! beta (scalar):	Axis-ratio runction parameter.
+! beta = 1.
 
 contains
 
+function temp_profile(par)
+
+	use xigar_params
+
+	REAL,intent(in) :: par
+	INTEGER :: i
+	REAL,DIMENSION(nannuli) :: temp_profile
+	
+	do i = 1,nannuli
+		temp_profile(i) = par*i
+	end do
+	
+end function temp_profile
+
+function density_profile(par)
+
+	use xigar_params
+
+	REAL,intent(in) :: par
+	INTEGER :: i
+	REAL,DIMENSION(nannuli) :: density_profile
+
+	do i = 1,nannuli
+		density_profile(i) = par*i
+	end do
+
+end function density_profile
+
 function xraylike(Params)
 
-	use xspec_params
 	use xigar_params
+	use fit_params
+	!use real_spectrum
+
+	REAL,DIMENSION(7),intent(in)	:: Params
+
+	INTEGER								:: i,j
+	INTEGER,PARAMETER					::	N = nannuli, nbins = nchannels
+
+	REAL,DIMENSION(N)					:: T, rho
+	REAL									:: alpha, beta
+	
+	REAL,DIMENSION(N,nbins)			:: spectrum
+	REAL									:: xraylike, chisquare
+	
+	T = temp_profile(Params(1))
+	rho = density_profile(Params(2))
+	
+	alpha = Params(3)
+	beta = Params(4) ! Or maybe a constant?
+	
+	spectrum = prospec(T,rho,alpha,beta)
+	
+	chisquare = 0.
+! 	do i=1,N
+! 		do j=1,nbins
+! 			chisquare = chisquare + ( (spectrum(i,j)-rspec(i,j)) / sqrt(spectrum(i,j)) )**2 
+! 		end do
+! 	end do
+
+	xraylike=chisquare
+
+end function xraylike
+
+function prospec(T,rho,alpha,beta)
+
+	use xigar_params
+	use fit_params
 	use sphvol
 
-	REAL,DIMENSION(7),intent(in) :: Params
 	REAL :: xraylike
 
-	INTEGER		:: i,j
-	INTEGER,PARAMETER			::	N = 6, nbins = nchannels
+	INTEGER						:: i,j
+	INTEGER,PARAMETER			::	N = nannuli, nbins = nchannels
 	REAL,DIMENSION(N,nbins)	:: synthspec, prospec, rspec
 	REAL,DIMENSION(nbins)	::	subspectrum, rdummy
 	REAL,DIMENSION(N)			:: a, T, rho
 	REAL,DIMENSION(N,N)		:: V
 	REAL							:: exp, alpha, beta
 
-	! --------------------------------- FITTING PARAMETERS ------------------------------- !
 	! a (1D array):	Radii for the observational annuli.
-	a = (/ 39.6749, 60.9293, 80.7667, 102.021, 124.692, 153.032 /)
-	! T (1D array):	Temperature profile for the cluster (in annuli bins).
-	T = (/ 8., 10., 8., 6., 4., 1. /) ! keV
-	! rho (1D array):	Density profile for the cluster (in annuli bins).
-	rho = (/ 10., 9., 7., 4., 1., 0.1 /)
-	! alpha (scalar):	Axis-ratio runction parameter.
-	alpha = 10.
-	! beta (scalar):	Axis-ratio runction parameter.
-	beta = 1.
+	a = rannuli
 
 	! Calculate synthetic-(unit-volume)-spectra
 	do i = 1, N
@@ -179,18 +129,16 @@ function xraylike(Params)
 		end do
 	end do
 
-	xraylike = 1.
-
-end function xraylike
+end function prospec
 
 function usynthspec(T, rho) ! Calculate unit-volume synthetic spectrum for given temperature and density
 
-	use xspec_params
 	use xigar_params
-	use sphvol
+	use fit_params
+	!use sphvol
 
 	REAL							:: exp, alpha, beta
-	INTEGER,PARAMETER			::	N = 6, nbins = nchannels
+	INTEGER,PARAMETER			::	N = nannuli, nbins = nchannels
 	REAL,intent(in)			:: T, rho
 	REAL,DIMENSION(nbins)	:: usynthspec
 	INTEGER						:: i

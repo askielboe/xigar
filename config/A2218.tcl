@@ -1,5 +1,8 @@
 # Data for cluster A2218:
 
+# Prefix for FITS files
+set cprefix "1666_"
+
 # REDSHIFT
 set redshift 0.176
 
@@ -17,8 +20,11 @@ set abundance 0.20
 # GALACTIC ABSORBTION
 set Hcolumn 0.026
 
+# Exposure
+set real_exposure 1
+
 # Radii of annuli
-set r [list 39.6749 60.9293 80.7667 102.021 124.692 153.032]
+set r [list 10. 15. 17. 18. 19. 20. 39.6749 60.9293 80.7667 102.021 124.692 153.032]
 
 # Number of annuli
 set N [llength $r]

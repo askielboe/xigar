@@ -1,7 +1,7 @@
 program test
 
-use xspec_params
-use params
+use xigar_params
+use fit_params
 use sphvol
 
 implicit none
@@ -10,7 +10,7 @@ implicit none
 !REAL,DIMENSION(nbins)		::	highpar1, highpar2, highpar3, highpar4
 
 INTEGER						:: i, j, idummy, ia, is
-INTEGER,PARAMETER			::	N = 6, nbins = nchannels ! N = number of shells, nbins = number of bins 
+INTEGER,PARAMETER			::	N = nannuli, nbins = nchannels ! N = number of shells, nbins = number of bins 
 ! I cut this off at the last bin since I get some weird numbers there.
 ! Other than that ot works fine.
 REAL,DIMENSION(nbins)	::	subspectrum, rdummy
@@ -23,9 +23,9 @@ REAL,PARAMETER				:: e = 2.71828183, Pi = 3.1415926535897932385
 
 ! --------------------------------- FITTING PARAMETERS ------------------------------- !
 ! a (1D array):	Radii for the observational annuli.
-a = (/ 39.6749, 60.9293, 80.7667, 102.021, 124.692, 153.032 /)
+a = rannuli
 ! T (1D array):	Temperature profile for the cluster (in annuli bins).
-T = (/ 8., 10., 8., 6., 4., 1. /) ! keV
+T = (/ 4., 5., 6., 5., 4., 3. /) ! keV
 ! rho (1D array):	Density profile for the cluster (in annuli bins).
 rho = (/ 10., 9., 7., 4., 1., 0.1 /)
 ! alpha (scalar):	Axis-ratio runction parameter.

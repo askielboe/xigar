@@ -30,30 +30,50 @@ implicit none
 
 contains
 
-function temp_profile(par)
+function temp_profile(par1, par2, par3, par4)
 
 	use xigar_params
 
-	REAL,intent(in) :: par
-	INTEGER :: i
-	REAL,DIMENSION(nannuli) :: temp_profile
+	REAL,intent(in) 			:: par1, par2, par3, par4
+	INTEGER 						:: i
+	REAL,DIMENSION(nannuli) :: temp_profile, r
+	REAL							:: rt
+	REAL							:: a 
+	REAL							:: b 
+	REAL							:: c
 	
+	r=rannuli
+	rt = par1
+	a = par2
+	b = par3
+	c = par4
+		
 	do i = 1,nannuli
-		temp_profile(i) = par*i
+		temp_profile(i) = (r(i)/rt)**(-a)/(1+(r(i)/rt)**b)**(c/b)
 	end do
 	
 end function temp_profile
 
-function density_profile(par)
+function density_profile(par1, par2, par3, par4)
 
 	use xigar_params
 
-	REAL,intent(in) :: par
-	INTEGER :: i
-	REAL,DIMENSION(nannuli) :: density_profile
+	REAL,intent(in) 			:: par1, par2, par3, par4
+	INTEGER 						:: i
+	REAL,DIMENSION(nannuli) :: density_profile, r
+	REAL							:: n0
+	REAL							:: rc 
+	REAL							:: alpha 
+	REAL							:: beta 
+	
+	r=rannuli
+	n0 = par1
+	rc = par2
+	alpha = par3
+	beta = par4
 
 	do i = 1,nannuli
-		density_profile(i) = par*i
+		density_profile(i) = n0**2 * (r(i)/rc)**(-alpha) / (1+r(i)**2/rc**2)**(3*beta-alpha/2)
 	end do
 
 end function density_profile
@@ -62,9 +82,10 @@ function xraylike(Params)
 
 	use xigar_params
 	use fit_params
+	!use real_data
 	!use real_spectrum
 
-	REAL,DIMENSION(7),intent(in)	:: Params
+	REAL,DIMENSION(9),intent(in)	:: Params
 
 	INTEGER								:: i,j
 	INTEGER,PARAMETER					::	N = nannuli, nbins = nchannels
@@ -75,22 +96,22 @@ function xraylike(Params)
 	REAL,DIMENSION(N,nbins)			:: spectrum
 	REAL									:: xraylike, chisquare
 	
-	T = temp_profile(Params(1))
-	rho = density_profile(Params(2))
+	T = temp_profile(Params(1),Params(2),Params(3),Params(4))
+	rho = density_profile(Params(5),Params(6),Params(7),Params(8))
 	
-	alpha = Params(3)
-	beta = Params(4) ! Or maybe a constant?
+	alpha = Params(9)
+	beta = 1. ! Params(10) ! Or maybe a constant?
 	
 	spectrum = prospec(T,rho,alpha,beta)
 	
-	chisquare = 0.
+	!chisquare = 0.
 ! 	do i=1,N
 ! 		do j=1,nbins
 ! 			chisquare = chisquare + ( (spectrum(i,j)-rspec(i,j)) / sqrt(spectrum(i,j)) )**2 
 ! 		end do
 ! 	end do
 
-	xraylike=chisquare
+	xraylike=(Params(1)-3.)**2. !+ (Params(2) - 10.)**2.
 
 end function xraylike
 
@@ -99,16 +120,19 @@ function prospec(T,rho,alpha,beta)
 	use xigar_params
 	use fit_params
 	use sphvol
+	!use resp_matrix.f90
 
-	REAL :: xraylike
+	REAL,intent(in)					:: , alpha, beta
+	REAL,DIMENSION(N),intent(in) 	:: T, rho
+	REAL 									:: xraylike
 
 	INTEGER						:: i,j
 	INTEGER,PARAMETER			::	N = nannuli, nbins = nchannels
 	REAL,DIMENSION(N,nbins)	:: synthspec, prospec, rspec
 	REAL,DIMENSION(nbins)	::	subspectrum, rdummy
-	REAL,DIMENSION(N)			:: a, T, rho
+	REAL,DIMENSION(N)			:: a
 	REAL,DIMENSION(N,N)		:: V
-	REAL							:: exp, alpha, beta
+	REAL							:: exp
 
 	! a (1D array):	Radii for the observational annuli.
 	a = rannuli
@@ -128,6 +152,8 @@ function prospec(T,rho,alpha,beta)
 			prospec(i,:) = prospec(i,:) + usynthspec(T(j),rho(j))*V(i,j)
 		end do
 	end do
+	
+	! ADD RESOPONSE CONVOLUTION FROM RESPONSE.F90
 
 end function prospec
 
@@ -135,6 +161,7 @@ function usynthspec(T, rho) ! Calculate unit-volume synthetic spectrum for given
 
 	use xigar_params
 	use fit_params
+	use resp_matrix
 	!use sphvol
 
 	REAL							:: exp, alpha, beta

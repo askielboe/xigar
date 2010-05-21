@@ -35,15 +35,15 @@ if {[exec ls ./data/output/] == ""} then {
 	
 	# Get cluster name and filename prefix for fits files from the user
 		puts "Please enter name of the cluster configuration file (in the config directory):"
-		gets stdin cluster_name
+		gets stdin cname
 		# puts "Please enter filename prefix for FITS files, including tailing _'s (ie. 1666_ for filenames: '1666_xx.pi'):"
 		# gets stdin file_prefix
 		# puts "Please enter number of bins / annuli in the data:"
 		# gets stdin nbin
 
 	# Read in parameters for the cluster
-		#source ./data/clusters/$cluster_name/$cluster_name.tcl
-		source ./config/$cluster_name.tcl
+		#source ./data/clusters/$cname/$cname.tcl
+		source ./config/$cname.tcl
 	
 	# Note that this way we actually get nspectra+1 spectra!
 	set stepsize [expr ($param_max-$param_min)/($nspectra)]
@@ -59,8 +59,8 @@ if {[exec ls ./data/output/] == ""} then {
 		
 		# Change the response files according to the current bin.
 		# puts "Changing response files to: $file_prefix$ibin.wrmf and $file_prefix$ibin.warf."
-		# set file_response ./data/clusters/$cluster_name/$file_prefix$ibin.wrmf
-		# set file_arf ./data/clusters/$cluster_name/$file_prefix$ibin.warf
+		# set file_response ./data/clusters/$cname/$file_prefix$ibin.wrmf
+		# set file_arf ./data/clusters/$cname/$file_prefix$ibin.warf
 		
 		dummy 0.3 11. $nchannels lin
 		
@@ -85,8 +85,9 @@ if {[exec ls ./data/output/] == ""} then {
 		#puts $fout "Varied parameter, minimum, maximum, exposure time. \n"
 		puts $fout "module xigar_params"
 		puts $fout "implicit none"
+		puts $fout "CHARACTER :: cname*[string length $cname]='$cname', cprefix*[string length $cprefix]='$cprefix'"
 		puts $fout "INTEGER,PARAMETER :: nchannels=$nchannels, nspectra=$nspectra, nannuli=$N"
-		puts $fout "REAL,PARAMETER :: param_min=$param_min, param_max=$param_max, exposure=$exposure, param_break=$param_break"
+		puts $fout "REAL,PARAMETER :: param_min=$param_min, param_max=$param_max, exposure=$exposure, real_exposure=$real_exposure, param_break=$param_break"
 		puts $fout "REAL,DIMENSION($N) :: rannuli= (/ &"
 		set i 1
 		foreach item $r {
@@ -122,4 +123,20 @@ if {[exec ls ./data/output/] == ""} then {
 			puts "Output directory NOT empty. Stopping..."
 		}
 }
+}
+proc dumpspec { args } {
+	chatter 5
+	
+	set nchannels 1070
+	
+	puts "Please enter the name of the cluster."
+	gets stdin cname
+	source ./config/$cname.tcl
+	
+	for {set i 1} {$i <= $N} {incr i} {
+		puts "Dumping spectrum to: $cprefix$i.txt"
+		rm ./data/clusters/$cname/$cprefix$i.txt
+		fdump infile=./data/clusters/$cname/$cprefix$i.pi outfile=./data/clusters/$cname/$cprefix$i.txt columns='COUNTS' rows=1-$nchannels prhead=no
+	}
+	puts "DONE dumping $N files!"
 }

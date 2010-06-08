@@ -50,8 +50,9 @@ set param_break 3.; # Set the value of the break between fits in ROOT.
 set exposure 4179600.2
 
 # Set temperature profile parameters
+set tnorm 130.
 set rt 5.
-set ta 0.3
+set ta 1.2
 set tb 2.
 set tc 0.01
 

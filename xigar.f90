@@ -49,7 +49,7 @@ function temp_profile(par1, par2, par3)
 	b = 2.
 		
 	do i = 1,nannuli
-		temp_profile(i) = 10.*(r(i)/rtmc)**(-a)/(1+(r(i)/rtmc)**b)**(c/b)
+		temp_profile(i) = tnorm*(r(i)/rtmc)**(-a)/(1+(r(i)/rtmc)**b)**(c/b)
 	end do
 	
 end function temp_profile
@@ -122,8 +122,8 @@ function xraylike(Params)
 	! TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY
 	xraylike = 0.
 	
-	startoff = 150
-	cutoff = 500	
+	startoff = 1
+	cutoff = nchannels	
 	
 	do i=1,N
 		do j=startoff,nchannels
@@ -142,20 +142,20 @@ function xraylike(Params)
 		end do
 	end do
 	xraylike = xraylike/cutoff/N
-	write(*,*) xraylike
+	!write(*,*) xraylike
 	
 ! 	if (xraylike < 10.) then
-		open(1,file='spectrum.txt',form='formatted')
-		do i = startoff,cutoff
-			write(1,'(i4, a1, e20.10)') i, ' ', spectrum(1,i)
-		end do
-		close(1)
-			write(*,*) xraylike
-		open(1,file='rspec.txt',form='formatted')
-		do i = startoff,cutoff
-				write(1,'(i4, a1, e20.10)') i, ' ', rspec(1,i)
-			end do
-		close(1)
+! 		open(1,file='spectrum.txt',form='formatted')
+! 		do i = startoff,cutoff
+! 			write(1,'(i4, a1, e20.10)') i, ' ', spectrum(1,i)
+! 		end do
+! 		close(1)
+! 			write(*,*) xraylike
+! 		open(1,file='rspec.txt',form='formatted')
+! 		do i = startoff,cutoff
+! 				write(1,'(i4, a1, e20.10)') i, ' ', rspec(1,i)
+! 			end do
+! 		close(1)
 ! 	end if
 
 ! 	xraylike=(Params(1)-3.)**2. !+ (Params(2) - 10.)**2.

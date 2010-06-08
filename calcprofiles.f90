@@ -16,7 +16,7 @@ REAL,DIMENSION(N)	:: temp_profile, density_profile
 r = rannuli
 
 do i = 1,nannuli
-	temp_profile(i) = (r(i)/rt)**(-ta)/(1+(r(i)/rt)**tb)**(tc/tb)
+	temp_profile(i) = tnorm*(r(i)/rt)**(-ta)/(1+(r(i)/rt)**tb)**(tc/tb)
 end do
 
 do i = 1,nannuli

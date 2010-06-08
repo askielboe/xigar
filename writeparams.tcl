@@ -11,7 +11,7 @@ set fout [open "xigar_params.f90" w]
 	puts $fout "CHARACTER :: cname*[string length $cname]='$cname', cprefix*[string length $cprefix]='$cprefix'"
 	puts $fout "INTEGER,PARAMETER :: nchannels=$nchannels, nchannels2=$nchannels2, nspectra=$nspectra, nannuli=$N"
 	puts $fout "REAL,PARAMETER :: param_min=$param_min, param_max=$param_max, exposure=$exposure, real_exposure=$real_exposure, param_break=$param_break"
-	puts $fout "REAL,PARAMETER :: rt=$rt, ta=$ta, tb=$tb, tc=$tc"
+	puts $fout "REAL,PARAMETER :: rt=$rt, ta=$ta, tb=$tb, tc=$tc, tnorm=$tnorm"
 	puts $fout "REAL,PARAMETER :: n0=$n0, rc=$rc, da=$da, db=$db"
 	puts $fout "REAL,PARAMETER :: alpha=$alpha, beta=$beta"	
 	puts $fout "REAL,DIMENSION($N) :: rannuli= (/ &"

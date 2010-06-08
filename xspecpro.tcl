@@ -23,7 +23,7 @@ proc xspecpro { args } {
 	puts "temp profile:"
 	foreach item $r {
 		set r $item
-		set temp_profile($i) [expr 10*pow(($r/$rt),(-$ta))/pow(1+pow($r/$rt,$tb),($tc/$tb))]
+		set temp_profile($i) [expr $tnorm*pow(($r/$rt),(-$ta))/pow(1+pow($r/$rt,$tb),($tc/$tb))]
 		puts $temp_profile($i)
 		set density_profile($i) [expr pow($n0,2.) * pow($r/$rc,-$da) / pow(1.+pow($r/$rc,2.),($db-$da))]
 		incr i

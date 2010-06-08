@@ -35,7 +35,7 @@ EOF
 
 # Run FORTRAN to generate PROFILE
 echo 'Running FORTRAN xspecpro.f90...'
-gfortran xigar_params.f90 xspecpro.f90
+gfortran sphvol.f90 xigar_params.f90 xspecpro.f90
 ./a.out
 
 echo 'Fake projected spectra saved to fortran file: ./data/clusters/fakec/fakec.f90'

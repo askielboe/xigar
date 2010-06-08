@@ -27,7 +27,7 @@ REAL,DIMENSION(i,i)				:: vol
 INTEGER								:: is, ia
 
 b = a*(beta + alpha*a)
-write(*,*) b
+!write(*,*) b
 
 ia = 1
 do

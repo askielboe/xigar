@@ -1,54 +1,161 @@
+! Apply response files to the PROJECTED SPECTRA
+!--------------------------------------------------------------------------------------!
+ 
+
 program response
 
-use xigar_params
 use resp_matrix
 
 implicit none
 
 INTEGER						:: i, j, idummy, ia, is, IT
-INTEGER,PARAMETER			::	N = nannuli, nbins = nchannels ! N = number of shells, nbins = number of bins 
+INTEGER,PARAMETER			::	N = 6! N = number of shells, nbins = number of bins 
 INTEGER, PARAMETER			:: mresp=1024, nresp=1070
-! I cut this off at the last bin since I get some weird numbers there.
-! Other than that ot works fine.
-REAL,DIMENSION(nbins)	::	subspectrum, rdummy
-real, DIMENSION(1024,1070) :: x,q
+CHARACTER(LEN=1) :: adummy
+ 
 
-REAL,DIMENSION(1070)	:: synthspec, prospec, dummyspec
+REAL,DIMENSION(1070)	:: synthspec, prospec, dummyspec, ss
 REAL,DIMENSION(1024) :: rspec
-REAL,DIMENSION(nresp,mresp) :: resp
-REAL							:: chisquare, ss
+REAL,DIMENSION(mresp,nresp) :: resp
 
-!!------Read in response matrix
-! open(1,file='response_matrix.txt',form='formatted')
-! 		do j=1,1024
-! 			read(1,*) (x(j,i),i=1,1070)
-! 		end do
-! close(1)
 
-!! Read in dummy spectrum
- 	open(1,file='fakespec_10.037.txt',form='formatted')
- 		do i = 1,nbins
- 			read(1,'(i4, f15.0)') idummy, dummyspec(i)
- 		end do
+!++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+! MAIN
+
+
+
+! Reshape RESPONSE to a matrix
+resp = RESHAPE( resp3, (/ 1024, 1070 /) )
+
+	
+! ----- Read in dummy spectrum. 
+	open(1,file='prospec1.out',form='formatted')
+		do i=1,1070
+ 		read(1,'(i4,a1,e15.4)') idummy,adummy,dummyspec(i)
+		end do
  	close(1)
 
-!! Convolution of the spectrum with response file
-
-x = RESHAPE(resp3, (/ 1024, 1070 /))
-
-do i=1,1024
-! 	rspec(i) = 0.
-! 	do j=1,1070
-! 		rspec(i) = rspec(i) + x(i,j)*dummyspec(j)
-! 	end do
-	rspec(i)=dot_product(x(i,:),dummyspec(:))
-end do
-
-!Write out rspec
-open(1,file='rspec.txt',form='formatted')
-	do i = 1,1024
-		write(1,'(i4, a1, e15.4)') i, ' ', rspec(i)
+! ----- Convolution of the spectrum with response file
+	ss=0
+	do i=1,1024
+	rspec(i)=sum(resp(i,:)*dummyspec(:))
 	end do
-close(1)
+
+! ------ Write out response spectrum
+open(2,file='rspec1.out',form='formatted')
+do i = 1,1024
+write(2,'(i4, a1, e15.4)') i, ' ', rspec(i)
+end do
+close(2)
+
+
+
+! ! ++++++++ Same for all the anuli ++++++++++++++++++++++++++++++++++ 
+! !
+! ! 
+! ! ------SPECTRUM 2
+! 	open(1,file='prospec2.out',form='formatted')
+! 		do i=1,1070
+!  		read(1,'(i4,a1,e15.4)') idummy,adummy,dummyspec(i)
+! 		end do
+!  	close(1)
+! 
+! 	ss=0
+! 	do i=1,1024
+! 	rspec(i)=sum(resp(i,:)*dummyspec(:))
+! 	end do
+! 
+! 	open(2,file='rspectra/rspec2.out',form='formatted')
+! 	do i = 1,1024
+! 	write(2,'(i4, a1, e15.4)') i, ' ', rspec(i)
+! 	end do
+! 	close(2)
+! 
+! 
+! 
+! ! ------SPECTRUM 3
+! 	open(1,file='prospec3.out',form='formatted')
+! 		do i=1,1070
+!  		read(1,'(i4,a1,e15.4)') idummy,adummy,dummyspec(i)
+! 		end do
+!  	close(1)
+! 
+! 	ss=0
+! 	do i=1,1024
+! 	rspec(i)=sum(resp(i,:)*dummyspec(:))
+! 	end do
+! 
+! 	open(2,file='rspectra/rspec3.out',form='formatted')
+! 	do i = 1,1024
+! 	write(2,'(i4, a1, e15.4)') i, ' ', rspec(i)
+! 	end do
+! 	close(2)
+! 	
+! 	
+! 	
+! 	
+! ! ------SPECTRUM 4	
+! 		open(1,file='prospec4.out',form='formatted')
+! 		do i=1,1070
+!  		read(1,'(i4,a1,e15.4)') idummy,adummy,dummyspec(i)
+! 		end do
+!  	close(1)
+! 
+! 	ss=0
+! 	do i=1,1024
+! 	rspec(i)=sum(resp(i,:)*dummyspec(:))
+! 	end do
+! 
+! 	open(2,file='rspectra/rspec4.out',form='formatted')
+! 	do i = 1,1024
+! 	write(2,'(i4, a1, e15.4)') i, ' ', rspec(i)
+! 	end do
+! 	close(2)
+! 	
+! 	
+! 	
+! 
+! ! ------SPECTRUM 5	
+! 		open(1,file='prospec5.out',form='formatted')
+! 		do i=1,1070
+!  		read(1,'(i4,a1,e15.4)') idummy,adummy,dummyspec(i)
+! 		end do
+!  	close(1)
+! 
+! 	ss=0
+! 	do i=1,1024
+! 	rspec(i)=sum(resp(i,:)*dummyspec(:))
+! 	end do
+! 
+! 	open(2,file='rspectra/rspec5.out',form='formatted')
+! 	do i = 1,1024
+! 	write(2,'(i4, a1, e15.4)') i, ' ', rspec(i)
+! 	end do
+! 	close(2)
+! 	
+! 	
+! 	
+! 	
+! ! ------SPECTRUM 6	
+! 		open(1,file='prospec6.out',form='formatted')
+! 		do i=1,1070
+!  		read(1,'(i4,a1,e15.4)') idummy,adummy,dummyspec(i)
+! 		end do
+!  	close(1)
+! 
+! 	ss=0
+! 	do i=1,1024
+! 	rspec(i)=sum(resp(i,:)*dummyspec(:))
+! 	end do
+! 
+! 	open(2,file='rspectra/rspec6.out',form='formatted')
+! 	do i = 1,1024
+! 	write(2,'(i4, a1, e15.4)') i, ' ', rspec(i)
+! 	end do
+! 	close(2)
+! 	
+! 	
+	
+
 
 end program response

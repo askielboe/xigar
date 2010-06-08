@@ -30,50 +30,51 @@ implicit none
 
 contains
 
-function temp_profile(par1, par2, par3, par4)
+function temp_profile(par1, par2, par3)
 
 	use xigar_params
 
-	REAL,intent(in) 			:: par1, par2, par3, par4
+	REAL,intent(in) 			:: par1, par2, par3
 	INTEGER 						:: i
 	REAL,DIMENSION(nannuli) :: temp_profile, r
-	REAL							:: rt
+	REAL							:: rtmc
 	REAL							:: a 
 	REAL							:: b 
 	REAL							:: c
 	
 	r=rannuli
-	rt = par1
+	rtmc = par1
 	a = par2
-	b = par3
-	c = par4
+	c = par3
+	b = 2.
 		
 	do i = 1,nannuli
-		temp_profile(i) = (r(i)/rt)**(-a)/(1+(r(i)/rt)**b)**(c/b)
+		temp_profile(i) = 10.*(r(i)/rtmc)**(-a)/(1+(r(i)/rtmc)**b)**(c/b)
 	end do
 	
 end function temp_profile
 
-function density_profile(par1, par2, par3, par4)
+function density_profile(par1, par2, par3)
 
 	use xigar_params
 
-	REAL,intent(in) 			:: par1, par2, par3, par4
+	!INTEGER,PARAMETER			:: nannuli = 6
+	REAL,intent(in) 			:: par1, par2, par3!, par4
 	INTEGER 						:: i
 	REAL,DIMENSION(nannuli) :: density_profile, r
-	REAL							:: n0
-	REAL							:: rc 
-	REAL							:: alpha 
-	REAL							:: beta 
+	REAL							:: n0mc
+	REAL							:: rcmc
+	REAL							:: alphamc
+	REAL							:: betamc
 	
 	r=rannuli
-	n0 = par1
-	rc = par2
-	alpha = par3
-	beta = par4
+	n0mc = par1
+	rcmc = par2
+	alphamc = par3
+	!betamc = par4
 
 	do i = 1,nannuli
-		density_profile(i) = n0**2 * (r(i)/rc)**(-alpha) / (1+r(i)**2/rc**2)**(3*beta-alpha/2)
+		density_profile(i) = n0mc**2 * (r(i)/rcmc)**(-alphamc) / (1+r(i)**2/rcmc**2)**(1-alphamc)
 	end do
 
 end function density_profile
@@ -82,78 +83,132 @@ function xraylike(Params)
 
 	use xigar_params
 	use fit_params
+	use rdata
 	!use real_data
 	!use real_spectrum
+	
+	! TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY
+	REAL,DIMENSION(6,1024) :: rspec
+	! TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY
 
 	REAL,DIMENSION(9),intent(in)	:: Params
 
-	INTEGER								:: i,j
-	INTEGER,PARAMETER					::	N = nannuli, nbins = nchannels
+	INTEGER								:: i,j, cutoff, startoff
+	INTEGER,PARAMETER					:: N = nannuli, nbins = nchannels
 
 	REAL,DIMENSION(N)					:: T, rho
-	REAL									:: alpha, beta
+	REAL									:: alphamc, betamc
 	
-	REAL,DIMENSION(N,nbins)			:: spectrum
+	REAL,DIMENSION(N,nchannels)	:: spectrum
 	REAL									:: xraylike, chisquare
 	
-	T = temp_profile(Params(1),Params(2),Params(3),Params(4))
-	rho = density_profile(Params(5),Params(6),Params(7),Params(8))
+	!T = (/ 7.1676579, 6.8666706, 6.6758351, 6.5216861, 6.3921208, 6.2625418 /)
+	T = temp_profile(Params(1),Params(2),Params(3))
+	rho = density_profile(Params(4),Params(1),Params(5))
+	!rho = (/ 2.52048515E-08,  1.64124643E-08,  1.23813395E-08,  9.80190240E-09,  8.01975997E-09,  6.53458088E-09 /)
 	
-	alpha = Params(9)
-	beta = 1. ! Params(10) ! Or maybe a constant?
+	!write(*,*) "Temp(1) = ", T(1)
+	!write(*,*) "Density(1) = ", rho(1)
 	
-	spectrum = prospec(T,rho,alpha,beta)
+	alphamc = Params(6)
+	!write(*,*) "Alpha = ", alpha
+	betamc = 1. ! Params(10) ! Or maybe a constant?
 	
-	!chisquare = 0.
-! 	do i=1,N
-! 		do j=1,nbins
-! 			chisquare = chisquare + ( (spectrum(i,j)-rspec(i,j)) / sqrt(spectrum(i,j)) )**2 
-! 		end do
-! 	end do
+	spectrum = prospec(T,rho,alphamc,betamc)
+	
+	! CALCULATE THE LIKELIHOOD
+	! TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY
+	rspec = TRANSPOSE(RESHAPE(rspeclong, (/ 1024,6 /)))
+	! TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY
+	xraylike = 0.
+	
+	startoff = 150
+	cutoff = 500	
+	
+	do i=1,N
+		do j=startoff,nchannels
+			if (j > cutoff) exit
+! 			write(*,*) "T parameters:", Params(1),Params(2),Params(3),Params(4)
+! 			write(*,*) "rho parameters:", Params(5),Params(1),Params(6)
+! 			write(*,*) T
+! 			write(*,*) rho
+!			write(*,*) alpha			
+! 			write(*,*) "i = ",i," and j = ",j
+! 			write(*,*) "Calculating: (",spectrum(i,j)," - ",rspec(i,j),")^2"
+			if (rspec(i,j) > 0) then
+				xraylike = xraylike + ( (spectrum(i,j)-rspec(i,j)) )**2./sqrt(rspec(i,j))
+			end if
+! 			write(*,*) "RESULT: ",( (spectrum(i,j)-rspec(i,j)) )**2.
+		end do
+	end do
+	xraylike = xraylike/cutoff/N
+	write(*,*) xraylike
+	
+! 	if (xraylike < 10.) then
+		open(1,file='spectrum.txt',form='formatted')
+		do i = startoff,cutoff
+			write(1,'(i4, a1, e20.10)') i, ' ', spectrum(1,i)
+		end do
+		close(1)
+			write(*,*) xraylike
+		open(1,file='rspec.txt',form='formatted')
+		do i = startoff,cutoff
+				write(1,'(i4, a1, e20.10)') i, ' ', rspec(1,i)
+			end do
+		close(1)
+! 	end if
 
-	xraylike=(Params(1)-3.)**2. !+ (Params(2) - 10.)**2.
+! 	xraylike=(Params(1)-3.)**2. !+ (Params(2) - 10.)**2.
 
 end function xraylike
 
-function prospec(T,rho,alpha,beta)
+function prospec(T,rho,alphamc,betamc)
 
 	use xigar_params
 	use fit_params
 	use sphvol
-	!use resp_matrix.f90
+	use resp_matrix
 
-	REAL,intent(in)					:: , alpha, beta
+	INTEGER, PARAMETER				:: mresp=1024, nresp=1070
+	REAL,DIMENSION(mresp,nresp) 	:: resp
+
+	INTEGER,PARAMETER					::	N = nannuli, nbins = nchannels
+	REAL,intent(in)					:: alphamc, betamc
 	REAL,DIMENSION(N),intent(in) 	:: T, rho
-	REAL 									:: xraylike
 
-	INTEGER						:: i,j
-	INTEGER,PARAMETER			::	N = nannuli, nbins = nchannels
-	REAL,DIMENSION(N,nbins)	:: synthspec, prospec, rspec
-	REAL,DIMENSION(nbins)	::	subspectrum, rdummy
-	REAL,DIMENSION(N)			:: a
-	REAL,DIMENSION(N,N)		:: V
-	REAL							:: exp
+	INTEGER								:: i,j
+	REAL,DIMENSION(N,nchannels)	:: prospec, prospecraw
+	REAL,DIMENSION(N,nchannels)	:: rspec
+	!REAL,DIMENSION(nchannels)			::	subspectrum, rdummy
+	REAL,DIMENSION(N)					:: a
+	REAL,DIMENSION(N,N)				:: V
+	REAL									:: exp
 
 	! a (1D array):	Radii for the observational annuli.
 	a = rannuli
 
-	! Calculate synthetic-(unit-volume)-spectra
-	do i = 1, N
-		synthspec(i,:) = usynthspec(T(i),rho(i))
-	end do
-
 	! Calculate volume-elements
-	V = vol(N, alpha, beta, a)
+	V = vol(N, alphamc, betamc, a)
 
 	! Do the projection (YEAH!)
 	do i=1,N
-		prospec(i,:) = 0.
+		prospecraw(i,:) = 0.
 		do j=i,N
-			prospec(i,:) = prospec(i,:) + usynthspec(T(j),rho(j))*V(i,j)
+			prospecraw(i,:) = prospecraw(i,:) + usynthspec(T(j),rho(j))*V(i,j)
 		end do
 	end do
 	
 	! ADD RESOPONSE CONVOLUTION FROM RESPONSE.F90
+	
+	! Reshape response files into matrices
+	resp = RESHAPE( resp3, (/ 1024, 1070 /) )
+	
+	do i=1,N ! OBS: RESPONSE NEEDS TO CHANGE FOR EACH ANNULUS (i) OF COURSE
+		do j=1,nchannels
+			prospec(i,j)=sum(resp(j,1:1024)*prospecraw(i,:))
+		end do
+		prospec(i,nchannels) = 0.
+	end do
 
 end function prospec
 
@@ -164,20 +219,20 @@ function usynthspec(T, rho) ! Calculate unit-volume synthetic spectrum for given
 	use resp_matrix
 	!use sphvol
 
-	REAL							:: exp, alpha, beta
-	INTEGER,PARAMETER			::	N = nannuli, nbins = nchannels
-	REAL,intent(in)			:: T, rho
-	REAL,DIMENSION(nbins)	:: usynthspec
-	INTEGER						:: i
-	REAL,PARAMETER				:: e = 2.71828183, Pi = 3.1415926535897932385
+	REAL								:: exp, alphamc, betamc
+	INTEGER,PARAMETER				::	N = nannuli, nbins = nchannels
+	REAL,intent(in)				:: T, rho
+	REAL,DIMENSION(nchannels)	:: usynthspec
+	INTEGER							:: i
+	REAL,PARAMETER					:: e = 2.71828183, Pi = 3.1415926535897932385
 
 	if (T < param_break) then ! Limits: Lowpar: t = 0..3 keV, Highpar: t = 3..15 keV
-		do i = 1,nbins
+		do i = 1,nchannels
 			usynthspec(i) = lowpar1(i) * T**3. + lowpar2(i) * T**2. + lowpar3(i)*T + lowpar4(i)
 			usynthspec(i) = e**usynthspec(i) * rho
 		end do
 	else if (T >= param_break) then
-		do i = 1,nbins
+		do i = 1,nchannels
 			usynthspec(i) = highpar1(i) * T**3. + highpar2(i) * T**2. + highpar3(i)*T + highpar4(i)
 			usynthspec(i) = e**usynthspec(i) * rho
 		end do

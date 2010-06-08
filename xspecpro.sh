@@ -5,12 +5,6 @@
 # Path to xspec (headas-init.sh)
 HEADAS='/Users/askielboe/Downloads/heasoft-6.9/i386-apple-darwin10.3.0'
 
-# Path to thisroot.sh
-rootfolder='/Users/askielboe/Repositories/root/bin/thisroot.sh'
-
-# -----------------------     PARAMETERS     ----------------------
-cluster='fakec'
-
 # THE REST OF THE PARAMETERS ARE CHANGED IN fakespec.tcl FOR NOW!
 # NO NEED TO CHANGE PARAMETERS ANYWHERE ELSE (only here and in fakespec).
 
@@ -18,10 +12,10 @@ cluster='fakec'
 # DO NOT CHANGE BELOW UNLESS YOU KNOW WHAT YOU'RE DOING!
 
 # Delete contents of the output folder (but warn the user first).
-echo 'WARNING: This will delete all files in the ./data folder. Are you sure you wish to continue? (y/n)'
+echo 'WARNING: This will delete all files in the ./data/clusters/fakec/ folder. Are you sure you wish to continue? (y/n)'
 read choice
 if [ $choice == 'y' ]; then
-	rm ./data/output/*
+	rm ./data/clusters/fakec/*
 else
 	exit 0
 fi
@@ -33,34 +27,17 @@ export HEADAS
 xspec << EOF
 # Generate parameter files
 @writeparams.tcl
-writeparams $cluster
+writeparams fakec
 # Fake spectra
-@fakespec.tcl
-fakespec
-$cluster
+@xspecpro.tcl
+xspecpro
 EOF
 
 # Run FORTRAN to generate PROFILE
-echo 'Running FORTRAN profile.f90...'
-gfortran xigar_params.f90 profile.f90
+echo 'Running FORTRAN xspecpro.f90...'
+gfortran xigar_params.f90 xspecpro.f90
 ./a.out
 
-# Run ROOT to generate fit PARAMETERS
-echo 'Running ROOT...'
-source $rootfolder
-root -l << EOF
-.L fit.c+
-FitAll()
-WriteParams()
-.q
-EOF
-
-echo 'xigar run completed'
-echo 'Fit parameters saved to: fit_params.f90'
-
-# Clean up!
-# rm *.out
-# rm *.mod
-# rm *.so
-# rm *.d
-# rm *.h
+echo 'Fake projected spectra saved to fortran file: ./data/clusters/fakec/fakec.f90'
+echo 'Copy to rdata to use in Monte Carlo:'
+echo 'cp ./data/clusters/fakec/fakec.f90 rdata.f90'

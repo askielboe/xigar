@@ -50,17 +50,17 @@ set param_break 3.; # Set the value of the break between fits in ROOT.
 set exposure 4179600.2
 
 # Set temperature profile parameters
-set rt 1.42e10
-set ta 0.1
-set tb 5.00
-set tc 10.0
+set rt 5.
+set ta 0.3
+set tb 2.
+set tc 0.01
 
 # Set density profile parameters
 # n0 = 100., rc = 0.01, da = 1., db = 0.5
-set n0 100.
-set rc 0.01
-set da 1.
-set db 0.5
+set n0 1.3
+set rc 5.
+set da 0.9
+set db 2.
 
 # NON-SPHERICAL PARAMETERS
 set alpha 3.

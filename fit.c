@@ -25,7 +25,7 @@ const Int_t nheader = 10;
 
 // const Int_t n = (nspectra+1)-nheader;
 const Int_t n = 101-nheader;
-const Int_t nfiles = nchannels;
+const Int_t nfiles = nchannels2;
 
 float chisquarelow[nfiles],parlow1[nfiles],parlow2[nfiles],parlow3[nfiles],parlow4[nfiles];
 float chisquarehigh[nfiles],parhigh1[nfiles],parhigh2[nfiles],parhigh3[nfiles],parhigh4[nfiles];

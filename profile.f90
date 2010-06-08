@@ -20,10 +20,10 @@ implicit none
 
 !INTEGER,PARAMETER								:: nchannels=1070 
 INTEGER,DIMENSION(nspectra+1,nchannels)	:: channel, count
-INTEGER											:: i, n, ichannel
-REAL,DIMENSION(nspectra+1)					:: params
-REAL												:: param, stepsize
-CHARACTER 										:: dummy*7, fnamein*50, fnameout*50
+INTEGER												:: i, n, ichannel
+REAL,DIMENSION(nspectra+1)						:: params
+REAL													:: param, stepsize
+CHARACTER 											:: dummy*7, fnamein*50, fnameout*50
 
 !-------------------------------------------------------------------
 ! Read in parameters from TCL logfile
@@ -79,7 +79,7 @@ n = 1
 
 ! Write output to file
 write(*,*) 'Writing output files...'
-do ichannel = 1,nchannels
+do ichannel = 1,nchannels2
 	write(fnameout,'(a,I5,a)') './data/profiles/profile_',ichannel,'.txt'
 	open(2,file=fnameout, status="replace", form='FORMATTED')
 	do n = 1,nspectra
@@ -88,7 +88,7 @@ do ichannel = 1,nchannels
 	close(2)
 end do
 
-write(*,'(a,I5,a)') 'Wrote ', nchannels ,' files to ./data/profiles/'
+write(*,'(a,I5,a)') 'Wrote ', nchannels2 ,' files to ./data/profiles/'
 write(*,*) 'DONE PROCESSING FILES!'
 
 end program profile

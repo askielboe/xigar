@@ -35,4 +35,23 @@ set fout [open "xigar_params.h" w]
 	puts $fout "const Float_t param_min=$param_min, param_max=$param_max, param_break=$param_break;"
 	puts $fout "const Int_t exposure=$exposure, nchannels=$nchannels, nchannels2=$nchannels2, nspectra=$nspectra;"
 close $fout
+
+# Write Gnuplot
+set fout [open "xigar_plot_t.gnu" w]
+	puts $fout "set xlabel 'r'"
+	puts $fout "set ylabel 'T'"
+	puts $fout "set xrange \[[lindex $r 0]:[lindex $r [expr $N-1]]\]"
+	puts $fout "T(x) = $tnorm*(x/$rt)**(-$ta)/(1+(x/$rt)**$tb)**($tc/$tb)"
+	puts $fout "plot T(x)"
+close $fout
+
+set fout [open "xigar_plot_rho.gnu" w]
+	puts $fout "set xlabel 'r'"
+	puts $fout "set ylabel 'rho'"
+	puts $fout "set xrange \[[lindex $r 0]:[lindex $r [expr $N-1]]\]"
+	puts $fout "rho(x) = $n0**2 * (x/$rc)**(-$da) / (1+x**2/$rc**2)**(1-$da)"
+	puts $fout "plot rho(x)"
+close $fout
+
+
 }

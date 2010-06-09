@@ -1,9 +1,7 @@
 #!/bin/bash
 
-# ----------------------- PROGRAM LOCATIONS ----------------------- 
-
-# Path to xspec (headas-init.sh)
-HEADAS='/Users/askielboe/Downloads/heasoft-6.9/i386-apple-darwin10.3.0'
+# Get binary locations from personal settings-file
+source settings.sh
 
 # THE REST OF THE PARAMETERS ARE CHANGED IN fakespec.tcl FOR NOW!
 # NO NEED TO CHANGE PARAMETERS ANYWHERE ELSE (only here and in fakespec).

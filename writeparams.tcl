@@ -53,5 +53,6 @@ set fout [open "xigar_plot_rho.gnu" w]
 	puts $fout "plot rho(x)"
 close $fout
 
+puts "SUCCESS: Wrote parameter files to: xigar_params.h and xigar_params.f90."
 
 }

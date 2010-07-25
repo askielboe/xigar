@@ -69,8 +69,8 @@ if {[exec ls ./data/output/] == ""} then {
 		}
 	#}
 	
-	source writeparams.tcl
-	[writeparams $cname]
+   # @writeparams.tcl
+   # [writeparams $cname]
 
 } else {
 	set question "N"

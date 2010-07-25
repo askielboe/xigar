@@ -27,10 +27,10 @@ export HEADAS
 . $HEADAS/headas-init.sh
 xspec << EOF
 # Generate parameter files
-@writeparams.tcl
+source writeparams.tcl
 writeparams $cluster
 # Fake spectra
-@fakespec.tcl
+source fakespec.tcl
 fakespec
 $cluster
 EOF

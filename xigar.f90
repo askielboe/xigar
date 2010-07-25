@@ -135,11 +135,12 @@ function xraylike(Params)
 	! TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY
 	xraylike = 0.
 	
-	startoff = 1
+	! Define range in which the fit tries to converge
+	startoff = 20
 	cutoff = 500	
 	
 	do i=1,N
-		do j=startoff,nchannels
+		do j=startoff,cutoff
 			if (j > cutoff) exit
 ! 			write(*,*) "T parameters:", Params(1),Params(2),Params(3),Params(4)
 ! 			write(*,*) "rho parameters:", Params(5),Params(1),Params(6)
@@ -151,12 +152,12 @@ function xraylike(Params)
 ! 			write(*,*) "i = ",i," and j = ",j
 ! 			write(*,*) "Calculating: (",spectrum(i,j)," - ",rspec(i,j),")^2"
 			if (rspec(i,j) > 0) then
-				xraylike = xraylike + ( (spectrum(i,j)-rspec(i,j)) )**2./sqrt(rspec(i,j))
+				xraylike = xraylike + ( (spectrum(i,j)-rspec(i,j)) )**2./rspec(i,j)
 			end if
 ! 			write(*,*) "RESULT: ",( (spectrum(i,j)-rspec(i,j)) )**2.
 		end do
 	end do
-	xraylike = xraylike/cutoff/N
+	xraylike = xraylike/(cutoff-startoff)/N
 	!write(*,*) xraylike
 	write (*,*) Params(3)
 	

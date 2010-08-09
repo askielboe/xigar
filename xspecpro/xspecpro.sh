@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Get binary locations from personal settings-file
-source settings.sh
+source ../settings.sh
 
 # THE REST OF THE PARAMETERS ARE CHANGED IN fakespec.tcl FOR NOW!
 # NO NEED TO CHANGE PARAMETERS ANYWHERE ELSE (only here and in fakespec).
@@ -13,7 +13,7 @@ source settings.sh
 echo 'WARNING: This will delete all files in the ./data/clusters/fakec/ folder. Are you sure you wish to continue? (y/n)'
 read choice
 if [ $choice == 'y' ]; then
-	rm ./data/clusters/fakec/*
+	rm $XIGAR/data/clusters/fakec/*
 else
 	exit 0
 fi
@@ -24,7 +24,7 @@ export HEADAS
 . $HEADAS/headas-init.sh
 xspec << EOF
 # Generate parameter files
-@writeparams.tcl
+@$XIGAR/common/writeparams.tcl
 writeparams fakec
 # Fake spectra
 @xspecpro.tcl
@@ -33,9 +33,9 @@ EOF
 
 # Run FORTRAN to generate PROFILE
 echo 'Running FORTRAN xspecpro.f90...'
-gfortran sphvol.f90 xigar_params.f90 xspecpro.f90
-./a.out
+gfortran $XIGAR/common/sphvol.f90 $XIGAR/xigar_params.f90 xspecpro.f90 -o $XIGAR/tmp/xspecpro.o
+$XIGAR/tmp/xspecpro.o
 
 echo 'Fake projected spectra saved to fortran file: ./data/clusters/fakec/fakec.f90'
-echo 'Copy to rdata to use in Monte Carlo:'
-echo 'cp ./data/clusters/fakec/fakec.f90 rdata.f90'
+echo 'To use file as real data in COSMOMC do the following:'
+echo 'cp ../data/clusters/fakec/fakec.f90 ../data/spectra/rdata.f90'

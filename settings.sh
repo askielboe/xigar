@@ -3,10 +3,13 @@
 # ----------------------- PROGRAM LOCATIONS -----------------------
 
 # Path to xigar directory
-XIGAR='/Users/askielboe/Documents/Studier/KU/4/xray/xigar'
+XIGAR='/...'
+
+# Path to your cosmomc directory
+COSMO='/...'
 
 # Path to xspec (headas-init.sh)
-HEADAS='/Users/askielboe/Downloads/heasoft-6.9/i386-apple-darwin10.3.0'
+HEADAS='/...'
 
 # Path to thisroot.sh
-rootfolder='/Users/askielboe/Repositories/root/bin/thisroot.sh'
+rootfolder='/...'

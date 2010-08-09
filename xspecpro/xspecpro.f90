@@ -31,7 +31,7 @@ do iann = 1,N
 	spectra(iann,:) = 0.
 	! Read in all spectra for the given annulus
 	do i = iann,N ! Loop through all shells
-		write(fnamein,'(a,I1,a,I1,a)') './data/clusters/fakec/fakec_',iann,'-',i,'.txt'
+		write(fnamein,'(a,I1,a,I1,a)') '../data/clusters/fakec/fakec_',iann,'-',i,'.txt'
 		open(1,file=fnamein,form='formatted')		
 		read(1,*) dummy ! Skip the column names
 		do j = 1,nchannels
@@ -45,7 +45,7 @@ end do
 write(*,*) 'Writing output files...'
 ! Write output to txt files
 do i = 1,N
-	write(fnameout,'(a,I2,a)') './data/clusters/fakec/fakec_ann',i,'.txt'
+	write(fnameout,'(a,I2,a)') '../data/clusters/fakec/fakec_ann',i,'.txt'
 	open(2,file=fnameout, status="replace", form='FORMATTED')
 	do j = 1,nchannels
 			write(2,'(I4,a,F20.10)') j, ' ', spectra(i,j)
@@ -54,7 +54,7 @@ do i = 1,N
 end do
 
 ! Write output to FORTRAN module files
-write(fnameout,'(a)') './data/clusters/fakec/fakec.f90'
+write(fnameout,'(a)') '../data/clusters/fakec/fakec.f90'
 open(2,file=fnameout, status="replace", form='FORMATTED')
 write(2,'(a)') "MODULE rdata"
 write(2,'(a)') "IMPLICIT NONE"
@@ -72,7 +72,7 @@ write(2,'(F20.10,a)') spectra(N,nchannels),"/)"
 write(2,'(a)') "END MODULE rdata"
 close(2)
 
-write(*,'(a,I5,a)') 'Wrote ', N*2 ,' files to ./data/clusters/fakec/...'
+write(*,'(a,I5,a)') 'Wrote ', N*2 ,' files to xigar/data/clusters/fakec/...'
 write(*,*) 'DONE PROCESSING FILES!'
 
 end program xspecpro

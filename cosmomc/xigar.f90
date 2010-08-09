@@ -113,7 +113,7 @@ function xraylike(Params)
 	REAL									:: alphamc, betamc
 	
 	REAL,DIMENSION(N,nchannels)	:: spectrum
-	REAL									:: xraylike, chisquare
+	REAL									:: xraylike, bestxraylike, chisquare
 	
 	!T = (/ 7.1676579, 6.8666706, 6.6758351, 6.5216861, 6.3921208, 6.2625418 /)
 	T = temp_profile(Params(1),Params(2),Params(3))
@@ -136,10 +136,12 @@ function xraylike(Params)
 	xraylike = 0.
 	
 	! Define range in which the fit tries to converge
-	startoff = 20
-	cutoff = 500	
+ startoff = 20
+ cutoff = 500
+!  startoff = 150
+!  cutoff = 350
 	
-	do i=1,N
+	do i=4,N
 		do j=startoff,cutoff
 			if (j > cutoff) exit
 ! 			write(*,*) "T parameters:", Params(1),Params(2),Params(3),Params(4)
@@ -159,24 +161,40 @@ function xraylike(Params)
 	end do
 	xraylike = xraylike/(cutoff-startoff)/N
 	!write(*,*) xraylike
-	write (*,*) Params(3)
-	
-! 	if (xraylike < 10.) then
-	if (T(1) > 0) then
-		write(*,*) T
-		open(1,file='spectrum.txt',form='formatted')
-		do i = startoff,cutoff
-			write(1,'(i4, a1, e20.10)') i, ' ', spectrum(1,i)
-		end do
-		close(1)
-			write(*,*) xraylike
-		open(1,file='rspec.txt',form='formatted')
-		do i = startoff,cutoff
-				write(1,'(i4, a1, e20.10)') i, ' ', rspec(1,i)
-			end do
-		close(1)
-	end if
-! 	end if
+	!write (*,*) Params(3)
+
+! Write all parameters to files in each iteration, to look for degeneracy.
+open(1,file='parameters.txt',access = 'append')
+write(1,*) xraylike, Params
+close(1)
+
+! Calculate if this chi2 is better than previous ones. If it is, we print the spectra to files.
+open(1,file='bestxraylike.txt',form='formatted')
+! write(1,*) 1000000000.
+read(1,*) bestxraylike
+close(1)
+!write(*,*) "COMPARING: ", xraylike, " < ", bestxraylike, " RESULT = ", (xraylike < bestxraylike)
+if (xraylike < bestxraylike) then
+   write(*,*) "NEW BEST CHI2: ", xraylike
+   write(*,*) "BEST PARAMETERS: ", Params
+   open(1,file='bestxraylike.txt',form='formatted')
+   write(1,'(e20.10)') xraylike
+   close(1)
+   !if (T(1) > 0) then
+    !write(*,*) T
+    open(1,file='spectrum.txt',form='formatted')
+    do i = startoff,cutoff
+       write(1,'(i4, a1, e20.10)') i, ' ', spectrum(1,i)
+    end do
+    close(1)
+       !write(*,*) xraylike
+    open(1,file='rspec.txt',form='formatted')
+    do i = startoff,cutoff
+          write(1,'(i4, a1, e20.10)') i, ' ', rspec(1,i)
+       end do
+    close(1)
+   !end if
+end if
 
 ! 	xraylike=(Params(1)-3.)**2. !+ (Params(2) - 10.)**2.
 

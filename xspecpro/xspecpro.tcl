@@ -1,15 +1,16 @@
 proc xspecpro { args } {
 
-	# Supress output (uncomment the next line to get all output).
-	#chatter 5
+   source ../settings.tcl
+   # Supress output (uncomment the next line to get all output).
+   chatter 5
 
 	# Uncomment next line to use external response matrices
 	
 	# source sphvol.tcl
-	source ./config/fakec.tcl
+	source $XIGAR/config/fakec.tcl
 	
-	set f "./data/clusters/fakec"
-	set falt "data/clusters/fakec"
+	set f "$XIGAR/data/clusters/fakec"
+	#set falt "data/clusters/fakec"
 	
 	# Calculate temp and density profiles from parameters
 	# for {set i 1} {$i <= $N} {incr i} {
@@ -20,11 +21,9 @@ proc xspecpro { args } {
 	# }
 	
 	set i 1
-	puts "temp profile:"
 	foreach item $r {
 		set r $item
 		set temp_profile($i) [expr $tnorm*pow(($r/$rt),(-$ta))/pow(1+pow($r/$rt,$tb),($tc/$tb))]
-		puts $temp_profile($i)
 		set density_profile($i) [expr pow($n0,2.) * pow($r/$rc,-$da) / pow(1.+pow($r/$rc,2.),($db-$da))]
 		incr i
 	}
@@ -54,8 +53,8 @@ if {[exec ls $f] == ""} then {
 	for {set iann 1} {$iann <= $N} {incr iann} {
 			
 		# Set correct response matrix for the given bin
-		set file_response ./data/clusters/$cname/$cprefix$iann.wrmf
-		set file_arf ./data/clusters/$cname/$cprefix$iann.warf
+		set file_response $XIGAR/data/clusters/$cname/$cprefix$iann.wrmf
+		set file_arf $XIGAR/data/clusters/$cname/$cprefix$iann.warf
 		
 		for {set i $iann} {$i <= $N} {incr i} {
 			if {$i > $N} then break
@@ -95,12 +94,12 @@ proc dumpspec { args } {
 	
 	puts "Please enter the name of the cluster."
 	gets stdin cname
-	source ./config/$cname.tcl
+	source $XIGAR/config/$cname.tcl
 	
 	for {set i 1} {$i <= $N} {incr i} {
 		puts "Dumping spectrum to: $cprefix$i.txt"
-		rm ./data/clusters/$cname/$cprefix$i.txt
-		fdump infile=./data/clusters/$cname/$cprefix$i.pi outfile=./data/clusters/$cname/$cprefix$i.txt columns='COUNTS' rows=1-$nchannels prhead=no
+		rm $XIGAR/data/clusters/$cname/$cprefix$i.txt
+		fdump infile=$XIGAR/data/clusters/$cname/$cprefix$i.pi outfile=$XIGAR/data/clusters/$cname/$cprefix$i.txt columns='COUNTS' rows=1-$nchannels prhead=no
 	}
 	puts "DONE dumping $N files!"
 }

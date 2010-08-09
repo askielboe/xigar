@@ -1,10 +1,10 @@
 proc writeparams { args } {
 	set cname $args
 	
-	source ./config/$cname.tcl
+	source ../config/$cname.tcl
 	
 # Write FORTRAN xspec-parameters file
-set fout [open "xigar_params.f90" w]
+set fout [open "../xigar_params.f90" w]
 	#puts $fout "Varied parameter, minimum, maximum, exposure time. \n"
 	puts $fout "module xigar_params"
 	puts $fout "implicit none"
@@ -30,14 +30,14 @@ set fout [open "xigar_params.f90" w]
 close $fout
 
 # Write C xspec-parameters file
-set fout [open "xigar_params.h" w]
+set fout [open "../xigar_params.h" w]
 	#puts $fout "Varied parameter, minimum, maximum, exposure time. \n"
 	puts $fout "const Float_t param_min=$param_min, param_max=$param_max, param_break=$param_break;"
 	puts $fout "const Int_t exposure=$exposure, nchannels=$nchannels, nchannels2=$nchannels2, nspectra=$nspectra;"
 close $fout
 
 # Write Gnuplot
-set fout [open "xigar_plot_t.gnu" w]
+set fout [open "../tools/xigar_plot_t.gnu" w]
 	puts $fout "set xlabel 'r'"
 	puts $fout "set ylabel 'T'"
 	puts $fout "set xrange \[[lindex $r 0]:[lindex $r [expr $N-1]]\]"
@@ -45,13 +45,26 @@ set fout [open "xigar_plot_t.gnu" w]
 	puts $fout "plot T(x)"
 close $fout
 
-set fout [open "xigar_plot_rho.gnu" w]
+set fout [open "../tools/xigar_plot_rho.gnu" w]
 	puts $fout "set xlabel 'r'"
 	puts $fout "set ylabel 'rho'"
 	puts $fout "set xrange \[[lindex $r 0]:[lindex $r [expr $N-1]]\]"
 	puts $fout "rho(x) = $n0**2 * (x/$rc)**(-$da) / (1+x**2/$rc**2)**(1-$da)"
 	puts $fout "plot rho(x)"
 close $fout
+
+set fout [open "../tools/plotmc.gnu" w]
+   # puts $fout "rc = $rc"
+   # puts $fout "ta = $ta"
+   # puts $fout "tb = $tb"
+   # puts $fout "tc = $tc"
+   # puts $fout "n0 = $n0"
+   # puts $fout "da = $da"
+   # puts $fout "db = $db"
+   # puts $fout "alpha = $alpha"
+   # REMEMBER TO CHANGE THESE IF THE ORDER OF THE PARAMETER CHANGES IN PARAMS_XRAY.INI !!!!
+	puts $fout "set log y"
+	puts $fout "plot 'xigar.txt' u (\$8-$alpha):2 w l, 'xigar.txt' u (\$7-$da):2 w l, 'xigar.txt' u (\$6-$n0):2 w l, 'xigar.txt' u (\$5-$tc):2 w l, 'xigar.txt' u (\$4-$ta):2 w l, 'xigar.txt' u (\$3-$rc):2 w l"
 
 puts "SUCCESS: Wrote parameter files to: xigar_params.h and xigar_params.f90."
 

@@ -1,7 +1,13 @@
-rsync -t xigar.f90 ../cosmomc/source/xigar.f90
-rsync -t sphvol.f90 ../cosmomc/source/sphvol.f90
-rsync -t fit_params.f90 ../cosmomc/source/fit_params.f90
-rsync -t xigar_params.f90 ../cosmomc/source/xigar_params.f90
-rsync -t rdata.f90 ../cosmomc/source/rdata.f90
-rsync -t resp_matrix.f90 ../cosmomc/source/resp_matrix.f90
-rsync -t params_xray.ini ../cosmomc/params_xray.ini
+source settings.sh
+# Copy general xigar files (parameters)
+rsync -t xigar_params.f90 $COSMO/source/xigar_params.f90
+# Copy common code
+rsync -t ./common/sphvol.f90 $COSMO/source/sphvol.f90
+# Copy cosmomc source code
+rsync -t ./cosmomc/xigar.f90 $COSMO/source/xigar.f90
+rsync -t ./cosmomc/fit_params.f90 $COSMO/source/fit_params.f90
+# Copy cosmomc settings
+rsync -t ./cosmomc/params_xray.ini $COSMO/params_xray.ini
+# Copy data
+rsync -t ./data/spectra/rdata.f90 $COSMO/source/rdata.f90
+rsync -t ./data/response/resp_matrix.f90 $COSMO/source/resp_matrix.f90

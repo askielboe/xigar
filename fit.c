@@ -45,17 +45,17 @@ void LoadData(Int_t i) {
    ifstream in;
 
 	if (i < 10) {
-		in.open(Form("./data/profiles/profile_    %1i.txt",i));
+		in.open(Form("./tmp/profile_    %1i.txt",i));
 		// printf("Opening file profile_1_    %1i.txt\n",i);
 	}
 	else if (i >= 10 && i < 100) {
-		in.open(Form("./data/profiles/profile_   %2i.txt",i));
+		in.open(Form("./tmp/profile_   %2i.txt",i));
 	}
 	else if (i >= 100 && i < 1000) {
-		in.open(Form("./data/profiles/profile_  %3i.txt",i));
+		in.open(Form("./tmp/profile_  %3i.txt",i));
 	}
 	else if (i >= 1000 && i < 10000) {
-		in.open(Form("./data/profiles/profile_ %4i.txt",i));
+		in.open(Form("./tmp/profile_ %4i.txt",i));
 	}
 	else if (i >= 10000) {
 		printf("ERROR: i must be an integer between 1 and 10000!\n");
@@ -207,7 +207,7 @@ void FitAll() {
 // }
 
 void WriteParams() {
-	FILE *fout = fopen("fit_params.f90","w");
+	FILE *fout = fopen("./cosmomc/fit_params.f90","w");
 	
 	fprintf(fout,"%s", "module fit_params\n\n");
 	fprintf(fout,"%s", "implicit none\n\n");

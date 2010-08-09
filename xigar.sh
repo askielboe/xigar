@@ -13,10 +13,10 @@ cluster='fakec'
 # DO NOT CHANGE BELOW UNLESS YOU KNOW WHAT YOU'RE DOING!
 
 # Delete contents of the output folder (but warn the user first).
-echo 'WARNING: This will delete all files in the ./data folder. Are you sure you wish to continue? (y/n)'
+echo 'WARNING: This will delete all files in the ./tmp folder. Are you sure you wish to continue? (y/n)'
 read choice
 if [ $choice == 'y' ]; then
-	rm ./data/output/*
+	rm ./tmp/*
 else
 	exit 0
 fi
@@ -27,7 +27,7 @@ export HEADAS
 . $HEADAS/headas-init.sh
 xspec << EOF
 # Generate parameter files
-source writeparams.tcl
+source $XIGAR/common/writeparams.tcl
 writeparams $cluster
 # Fake spectra
 source fakespec.tcl
@@ -37,8 +37,8 @@ EOF
 
 # Run FORTRAN to generate PROFILE
 echo 'Running FORTRAN profile.f90...'
-gfortran xigar_params.f90 profile.f90
-./a.out
+gfortran xigar_params.f90 $XIGAR/common/profile.f90 -o $XIGAR/tmp/profile.o
+$XIGAR/tmp/profile.o
 
 # Run ROOT to generate fit PARAMETERS
 echo 'Running ROOT...'
@@ -52,6 +52,8 @@ EOF
 
 echo 'xigar run completed'
 echo 'Fit parameters saved to: fit_params.f90'
+echo 'Now make sure everything is set up in cosmomc/params_xray.ini and do:'
+echo './copy_to_camb.sh'
 
 # Clean up!
 # rm *.out

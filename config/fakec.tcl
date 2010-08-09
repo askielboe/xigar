@@ -64,5 +64,5 @@ set da 0.9
 set db 2.
 
 # NON-SPHERICAL PARAMETERS
-set alpha 3.
+set alpha 2.
 set beta 1.

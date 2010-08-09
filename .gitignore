@@ -6,6 +6,7 @@
 *.exe
 *.mod
 data/*
+tmp/*
 xspec_params.f90
 xigar_params.f90
 params.f90

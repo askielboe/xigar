@@ -42,7 +42,7 @@ end do
 n = 1
 	
 	do while (params(n) < 9.999 .AND. n <= nspectra+1)
-		write(fnamein,'(a,F5.3,a)') './data/output/fakespec_',params(n),'.txt'
+		write(fnamein,'(a,F5.3,a)') './tmp/fakespec_',params(n),'.txt'
 		write(*,'(a,a)') 'Reading file: ', fnamein		
 		open(1,file=fnamein,form='formatted')
 		read(1,*) dummy ! Skip the column names
@@ -54,7 +54,7 @@ n = 1
 	end do
 
 	do while (params(n) < 99.999 .AND. n <= nspectra+1)
-		write(fnamein,'(a,F6.3,a)') './data/output/fakespec_',params(n),'.txt'
+		write(fnamein,'(a,F6.3,a)') './tmp/fakespec_',params(n),'.txt'
 		write(*,'(a,a)') 'Reading file: ', fnamein
 		open(1,file=fnamein,form='formatted')
 		read(1,*) dummy ! Skip the column names
@@ -66,7 +66,7 @@ n = 1
 	end do
 
 	do while (params(n) < 999.999 .AND. n <= nspectra+1)
-		write(fnamein,'(a,F7.3,a)') './data/output/fakespec_',params(n),'.txt'
+		write(fnamein,'(a,F7.3,a)') './tmp/fakespec_',params(n),'.txt'
 		write(*,'(a,a)') 'Reading file: ', fnamein
 		open(1,file=fnamein,form='formatted')
 		read(1,*) dummy ! Skip the column names
@@ -80,7 +80,7 @@ n = 1
 ! Write output to file
 write(*,*) 'Writing output files...'
 do ichannel = 1,nchannels2
-	write(fnameout,'(a,I5,a)') './data/profiles/profile_',ichannel,'.txt'
+	write(fnameout,'(a,I5,a)') './tmp/profile_',ichannel,'.txt'
 	open(2,file=fnameout, status="replace", form='FORMATTED')
 	do n = 1,nspectra
 			write(2,'(F7.3,a,F12.7)') params(n), ' ', count(n,ichannel)/exposure
@@ -88,7 +88,7 @@ do ichannel = 1,nchannels2
 	close(2)
 end do
 
-write(*,'(a,I5,a)') 'Wrote ', nchannels2 ,' files to ./data/profiles/'
+write(*,'(a,I5,a)') 'Wrote ', nchannels2 ,' files to ./tmp/'
 write(*,*) 'DONE PROCESSING FILES!'
 
 end program profile

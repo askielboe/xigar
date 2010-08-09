@@ -19,7 +19,7 @@ chatter 5
 # END > DEFINITIONS                                         #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-if {[exec ls ./data/output/] == ""} then {
+if {[exec ls ./tmp/] == ""} then {
 	
 	# Get cluster name and filename prefix for fits files from the user
 		puts "Please enter name of the cluster configuration file (in the config directory):"
@@ -57,12 +57,12 @@ if {[exec ls ./data/output/] == ""} then {
 			data none
 		
 			# puts "Faking spectrum with parameter $ipar = $param."
-			fakeit none & &y & & ./data/output/fakespec.fak & $exposure &
+			fakeit none & &y & & ./tmp/fakespec.fak & $exposure &
 			# Uncomment next line to use external response matrices
 			# fakeit none & $file_response & $file_arf & y & & ./data/output/fakespec.fak & $exposure &
 			
 			puts "Dumping spectrum to: fakespec_$param.txt"
-			fdump infile=./data/output/fakespec.fak outfile=./data/output/fakespec_[format "%4.3f" $param].txt columns='COUNTS' rows=1-$nchannels2 prhead=no
+			fdump infile=./tmp/fakespec.fak outfile=./tmp/fakespec_[format "%4.3f" $param].txt columns='COUNTS' rows=1-$nchannels2 prhead=no
 			
 			# puts "Dumping spectrum to: fakespec_$ibin-$ipar-$param.txt"
 			# fdump infile=./data/output/fakespec.fak outfile=./data/output/fakespec_$ibin-$ipar-[format "%4.3f" $param].txt columns='COUNTS' rows=1-1070 prhead=no
@@ -76,11 +76,11 @@ if {[exec ls ./data/output/] == ""} then {
 	set question "N"
 	puts "OUTPUT DIRECTORY NOT EMPTY!"
 	puts "Please move files you want to save to another directory before running fakespec!"
-	puts "If you want to delete all content of the output folder press 'y' now."
+	puts "If you want to delete all content of the output (tmp) folder press 'y' now."
 	gets stdin question
 		if {$question == "y"} then {
-			rm ./data/output/*
-			puts "Deleting contents of output folder. Please run fakespec again to generate new spectra."
+			rm ./tmp/*
+			puts "Deleting contents of output (tmp) folder. Please run fakespec again to generate new spectra."
 		} else {
 			puts "Output directory NOT empty. Stopping..."
 		}

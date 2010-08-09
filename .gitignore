@@ -10,3 +10,5 @@ tmp/*
 xspec_params.f90
 xigar_params.f90
 params.f90
+settings.sh
+settings.tcl

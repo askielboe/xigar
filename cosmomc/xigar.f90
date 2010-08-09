@@ -141,7 +141,7 @@ function xraylike(Params)
 !  startoff = 150
 !  cutoff = 350
 	
-	do i=4,N
+	do i=1,N
 		do j=startoff,cutoff
 			if (j > cutoff) exit
 ! 			write(*,*) "T parameters:", Params(1),Params(2),Params(3),Params(4)

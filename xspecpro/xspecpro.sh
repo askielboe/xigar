@@ -39,3 +39,4 @@ $XIGAR/tmp/xspecpro.o
 echo 'Fake projected spectra saved to fortran file: ./data/clusters/fakec/fakec.f90'
 echo 'To use file as real data in COSMOMC do the following:'
 echo 'cp ../data/clusters/fakec/fakec.f90 ../data/spectra/rdata.f90'
+echo 'Don not forget to run copy_to_camb.sh afterwards.'

@@ -16,4 +16,10 @@ Edit settings.sh and settings.tcl to point to the correct directories.
 Usage
 -----
 
-Run xigar.sh and prosper.
+Generating fake data to use in MCMC:
+* Source xspecpro/xspecpro.sh
+
+* Run xigar.sh
+* Run copy-to-camb.sh
+* Go to COSMOMC directory and run domake.sh
+* Do ./cosmomc params_xray.ini

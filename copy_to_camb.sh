@@ -11,3 +11,8 @@ rsync -t ./cosmomc/params_xray.ini $COSMO/params_xray.ini
 # Copy data
 rsync -t ./data/spectra/rdata.f90 $COSMO/source/rdata.f90
 rsync -t ./data/response/resp_matrix.f90 $COSMO/source/resp_matrix.f90
+# Copy files for monitoring fit convergence
+rsync -t ./cosmomc/empty.txt $COSMO/empty.txt
+rsync -t ./cosmomc/worstxraylike.txt $COSMO/worstxraylike.txt
+# Copy 'makefile'
+rsync -t ./cosmomc/domake.sh $COSMO/domake.sh

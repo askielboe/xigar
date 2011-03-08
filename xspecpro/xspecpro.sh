@@ -36,6 +36,9 @@ echo 'Running FORTRAN xspecpro.f90...'
 gfortran $XIGAR/common/sphvol.f90 $XIGAR/xigar_params.f90 xspecpro.f90 -o $XIGAR/tmp/xspecpro.o
 $XIGAR/tmp/xspecpro.o
 
+# Clean up!
+rm *.mod
+
 echo 'Fake projected spectra saved to fortran file: ./data/clusters/fakec/fakec.f90'
 echo 'To use file as real data in COSMOMC do the following:'
 echo 'cp ../data/clusters/fakec/fakec.f90 ../data/spectra/rdata.f90'

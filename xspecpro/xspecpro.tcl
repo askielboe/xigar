@@ -7,7 +7,7 @@ proc xspecpro { args } {
 	# Uncomment next line to use external response matrices
 	
 	# source sphvol.tcl
-	source $XIGAR/config/fakec.tcl
+	source ../config/fakec.tcl
 	
 	set f "$XIGAR/data/clusters/fakec"
 	#set falt "data/clusters/fakec"
@@ -20,13 +20,18 @@ proc xspecpro { args } {
 	# 	puts $density_profile($i)
 	# }
 	
+	puts "TEMP profile:"
 	set i 1
 	foreach item $r {
 		set r $item
-		set temp_profile($i) [expr $tnorm*pow(($r/$rt),(-$ta))/pow(1+pow($r/$rt,$tb),($tc/$tb))]
-		set density_profile($i) [expr pow($n0,2.) * pow($r/$rc,-$da) / pow(1.+pow($r/$rc,2.),($db-$da))]
+		set temp_profile($i) 12.
+		#[expr $tnorm*pow(($r/$rt),(-$ta))/pow(1+pow($r/$rt,$tb),($tc/$tb))]
+		puts $temp_profile($i)
+		# COMMENT: Density is applied in FORTRAN code (xspecpro.f90)
+		#set density_profile($i) [expr pow($n0,2.) * pow($r/$rc,-$da) / pow(1.+pow($r/$rc,2.),($db-0.5*$da))]
 		incr i
-	}
+   }
+	
 	
 	# Fake profiles defines in config/fakec.tcl
 
@@ -53,20 +58,23 @@ if {[exec ls $f] == ""} then {
 	for {set iann 1} {$iann <= $N} {incr iann} {
 			
 		# Set correct response matrix for the given bin
-		set file_response $XIGAR/data/clusters/$cname/$cprefix$iann.wrmf
-		set file_arf $XIGAR/data/clusters/$cname/$cprefix$iann.warf
+		# set file_response $XIGAR/data/clusters/$cname/$cprefix$iann.wrmf
+		# set file_arf $XIGAR/data/clusters/$cname/$cprefix$iann.warf
+		set file_response $XIGAR/data/clusters/$cname/1666_3.wrmf
+		set file_arf $XIGAR/data/clusters/$cname/1666_3.warf
 		
 		for {set i $iann} {$i <= $N} {incr i} {
 			if {$i > $N} then break
-
+			
+			data none
 			model none
-
+			
 			model mekal & $temp_profile($i) & $nH & $abundance & $redshift & $switch & 1 &
 			addcomp 2 wabs & $Hcolumn
 			#addcomp 3 constant & [expr 1./$exposure]
-
+			
 			puts "Faking spectrum for annulus: $iann, shell: $i, filename: fakec_temp.tmp"
-			fakeit none & $file_response & $file_arf & y & & $f/fakec_$iann-$i.tmp & $exposure &
+			fakeit none & $file_response & $file_arf & n & & $f/fakec_$iann-$i.tmp & $exposure &
 			
 			puts "DUMPING spectrum to file: fakec_$iann-$i.txt"
 			fdump infile=$f/fakec_$iann-$i.tmp outfile=$f/fakec_$iann-$i.txt columns='COUNTS' rows=1-1070 prhead=no
@@ -94,7 +102,7 @@ proc dumpspec { args } {
 	
 	puts "Please enter the name of the cluster."
 	gets stdin cname
-	source $XIGAR/config/$cname.tcl
+	source ../config/$cname.tcl
 	
 	for {set i 1} {$i <= $N} {incr i} {
 		puts "Dumping spectrum to: $cprefix$i.txt"

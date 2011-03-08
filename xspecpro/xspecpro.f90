@@ -10,7 +10,7 @@ implicit none
 CHARACTER 							:: dummy*7, fnamein*50, fnameout*50
 INTEGER,PARAMETER					:: N = nannuli !, nchannels = 1024
 INTEGER								:: i, iann, j
-REAL,DIMENSION(N) 				:: r
+REAL,DIMENSION(N) 				:: r, counts_integrated
 REAL,DIMENSION(N)					:: rho
 REAL,DIMENSION(N,N)				:: V
 REAL,DIMENSION(N,nchannels)	:: counts, spectra
@@ -19,8 +19,8 @@ r = rannuli
 
 ! Calculate density profile
 do i=1,N
-	!rho(i) = n0**2. * (r(i)/rc)**(-da) / (1.+r(i)**2./rc**2.)**(3.*db-da/2.)
-	rho(i) = n0**2 * (r(i)/rc)**(-da) / (1+r(i)**2/rc**2)**(1-da)
+	rho(i) = n0**2. * (r(i)/rc)**(-da) / (1.+r(i)**2./rc**2.)**(3.*db-da/2.)
+	!rho(i) = n0**2 * (r(i)/rc)**(-da) / (1+r(i)**2/rc**2)**(1-da)
 end do
 
 ! Calculate volume-elements
@@ -31,26 +31,37 @@ do iann = 1,N
 	spectra(iann,:) = 0.
 	! Read in all spectra for the given annulus
 	do i = iann,N ! Loop through all shells
-		write(fnamein,'(a,I1,a,I1,a)') '../data/clusters/fakec/fakec_',iann,'-',i,'.txt'
+		if (i < 10 .AND. iann < 10) then
+			write(fnamein,'(a,I1,a,I1,a)') '../data/clusters/fakec/fakec_',iann,'-',i,'.txt'
+		else if (i > 9 .AND. iann < 10) then
+			write(fnamein,'(a,I1,a,I2,a)') '../data/clusters/fakec/fakec_',iann,'-',i,'.txt'
+		else if (i < 10 .AND. iann > 9) then
+			write(fnamein,'(a,I2,a,I1,a)') '../data/clusters/fakec/fakec_',iann,'-',i,'.txt'
+		else if (i > 9 .AND. iann > 9) then
+			write(fnamein,'(a,I2,a,I2,a)') '../data/clusters/fakec/fakec_',iann,'-',i,'.txt'
+		endif
 		open(1,file=fnamein,form='formatted')		
 		read(1,*) dummy ! Skip the column names
 		do j = 1,nchannels
 			read(1,*) dummy, counts(i,j)
 		end do
-		write(*,*) "Calculating: counts*", V(iann,i), " * ", rho(i), " / ",exposure 
-		spectra(iann,:) = spectra(iann,:) + counts(i,:)*V(iann,i)*rho(i)/exposure	
+		write(*,*) "Calculating: counts*", V(iann,i), " * ", rho(i) !, " / ",exposure 
+		spectra(iann,:) = spectra(iann,:) + counts(i,:)*V(iann,i)*rho(i) !/exposure	
 	end do
 end do
 
 write(*,*) 'Writing output files...'
 ! Write output to txt files
 do i = 1,N
+	counts_integrated(i) = 0.
 	write(fnameout,'(a,I2,a)') '../data/clusters/fakec/fakec_ann',i,'.txt'
 	open(2,file=fnameout, status="replace", form='FORMATTED')
 	do j = 1,nchannels
 			write(2,'(I4,a,F20.10)') j, ' ', spectra(i,j)
+			counts_integrated(i) = counts_integrated(i) + spectra(i,j)
 	end do
 	close(2)
+	write(*,*) "Integrated counts in annulus ", i, ": ",counts_integrated(i)
 end do
 
 ! Write output to FORTRAN module files

@@ -25,13 +25,14 @@ set abundance 0.20
 set Hcolumn 0.026
 
 # Radii of annuli
-set r [list 39.6749 60.9293 80.7667 102.021 124.692 153.032]
+# set r [list 39.6749 60.9293 80.7667 102.021 124.692 153.032]
+set r [list 0.02 0.05 0.08 0.1 0.14 0.18 0.25 0.4 0.6 0.7 0.8 1.]
 
 # Number of annuli
 set N [llength $r]
 
 # Observational Exposure
-set real_exposure 1
+set real_exposure 41796.2
 
 # ---------------------------- FITS FILES SPECIFICS ---------------------------- #
 set nchannels 1024
@@ -46,8 +47,8 @@ set nspectra 100.	; # Note that we actually get nspectra+1 spectra!
 set param_break 3.; # Set the value of the break between fits in ROOT.
 
 # ------------------------------ MODELS / PROFILES ----------------------------- #
-# Fake exposure (exposure to fake with)
-set exposure 4179600.2
+# Fake exposure (exposure to fake with) data is = 41796.2
+set exposure 41796.2
 
 # Set temperature profile parameters
 set tnorm 130.
@@ -59,10 +60,10 @@ set tc 0.01
 # Set density profile parameters
 # n0 = 100., rc = 0.01, da = 1., db = 0.5
 set n0 1.3
-set rc 5.
+set rc 0.1
 set da 0.9
 set db 2.
 
 # NON-SPHERICAL PARAMETERS
-set alpha 2.
+set alpha 0.
 set beta 1.

@@ -1,10 +1,11 @@
 proc writeparams { args } {
 	set cname $args
 	
-	source config/$cname.tcl
+	source settings.tcl
+	source $XIGAR/config/$cname.tcl
 	
 # Write FORTRAN xspec-parameters file
-set fout [open "xigar_params.f90" w]
+set fout [open "$XIGAR/xigar_params.f90" w]
 	#puts $fout "Varied parameter, minimum, maximum, exposure time. \n"
 	puts $fout "module xigar_params"
 	puts $fout "implicit none"
@@ -30,14 +31,14 @@ set fout [open "xigar_params.f90" w]
 close $fout
 
 # Write C xspec-parameters file
-set fout [open "xigar_params.h" w]
+set fout [open "$XIGAR/xigar_params.h" w]
 	#puts $fout "Varied parameter, minimum, maximum, exposure time. \n"
 	puts $fout "const Float_t param_min=$param_min, param_max=$param_max, param_break=$param_break;"
 	puts $fout "const Int_t exposure=$exposure, nchannels=$nchannels, nchannels2=$nchannels2, nspectra=$nspectra;"
 close $fout
 
 # Write Gnuplot
-set fout [open "tools/xigar_plot_t.gnu" w]
+set fout [open "$XIGAR/tools/xigar_plot_t.gnu" w]
 	puts $fout "set xlabel 'r'"
 	puts $fout "set ylabel 'T'"
 	puts $fout "set xrange \[[lindex $r 0]:[lindex $r [expr $N-1]]\]"
@@ -45,7 +46,7 @@ set fout [open "tools/xigar_plot_t.gnu" w]
 	puts $fout "plot T(x)"
 close $fout
 
-set fout [open "tools/xigar_plot_rho.gnu" w]
+set fout [open "$XIGAR/tools/xigar_plot_rho.gnu" w]
 	puts $fout "set xlabel 'r'"
 	puts $fout "set ylabel 'rho'"
 	puts $fout "set xrange \[[lindex $r 0]:[lindex $r [expr $N-1]]\]"
@@ -53,7 +54,7 @@ set fout [open "tools/xigar_plot_rho.gnu" w]
 	puts $fout "plot rho(x)"
 close $fout
 
-set fout [open "tools/plotmc.gnu" w]
+set fout [open "$XIGAR/tools/plotmc.gnu" w]
    # puts $fout "rc = $rc"
    # puts $fout "ta = $ta"
    # puts $fout "tb = $tb"

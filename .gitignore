@@ -12,3 +12,6 @@ xigar_params.f90
 params.f90
 settings.sh
 settings.tcl
+/settings.sh
+/settings.tcl
+/cosmomc/fit_params.f90

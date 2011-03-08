@@ -21,5 +21,5 @@ EOF
 
 # Run FORTRAN to generate PROFILE
 echo 'Running FORTRAN calcprofiles.f90...'
-gfortran xigar_params.f90 calcprofiles.f90
+gfortran ../xigar_params.f90 calcprofiles.f90
 ./a.out

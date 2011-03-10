@@ -7,25 +7,57 @@ use xigar_params
 
 implicit none
 
-CHARACTER 							:: dummy*7, fnamein*50, fnameout*50
-INTEGER,PARAMETER					:: N = nannuli !, nchannels = 1024
-INTEGER								:: i, iann, j
+CHARACTER 						:: dummy*7, fnamein*50, fnameout*50
+!INTEGER,PARAMETER				:: N = nannuli !, nchannels = 1024
+!!! Define resolution in each bin !!!
+INTEGER,PARAMETER				:: resolution = 2
+INTEGER,PARAMETER				:: N = nannuli*resolution
+REAL							:: r_bin_size, r_bin_step
+REAL,DIMENSION(N)				:: r_resolved
+!!! Define resolution in each bin !!!
+INTEGER							:: i, iann, j, bin
 REAL,DIMENSION(N) 				:: r, counts_integrated
-REAL,DIMENSION(N)					:: rho
+REAL,DIMENSION(N)				:: rho
 REAL,DIMENSION(N,N)				:: V
-REAL,DIMENSION(N,nchannels)	:: counts, spectra
+REAL,DIMENSION(N,nchannels)		:: counts, spectra
 
-r = rannuli
+!!! Define resolution in each bin !!!
+
+bin = 1
+do i = 1,nannuli
+	if (i > 1) then
+		r_bin_size = rannuli(i)-rannuli(i-1)
+		r_bin_step = r_bin_size/resolution
+		do j = 1,resolution
+			r_resolved(bin) = rannuli(i-1) + j * r_bin_step
+			write(*,*) "r_resolved(",bin,") = ",r_resolved(bin)
+			bin = bin + 1
+		end do
+	else
+		r_bin_size = rannuli(i)
+		r_bin_step = r_bin_size/resolution
+		do j = 1,resolution
+			r_resolved(bin) = 0. + j * r_bin_step
+			write(*,*) "r_resolved(",bin,") = ",r_resolved(bin)
+			bin = bin + 1
+		end do
+	end if
+end do
+r = r_resolved
+!!! Define resolution in each bin !!!
+
+!r = rannuli
 
 ! Calculate density profile
 do i=1,N
 	rho(i) = n0**2. * (r(i)/rc)**(-da) / (1.+r(i)**2./rc**2.)**(3.*db-da/2.)
+	write(*,*) "Rho(r=",r(i),") = ",rho(i)
 	!rho(i) = n0**2 * (r(i)/rc)**(-da) / (1+r(i)**2/rc**2)**(1-da)
 end do
 
 ! Calculate volume-elements
 V = vol(N, alpha, beta, r)
-write(*,*) "Volumes:", V
+! write(*,*) "Volumes:", V
 
 do iann = 1,N
 	spectra(iann,:) = 0.
@@ -45,7 +77,7 @@ do iann = 1,N
 		do j = 1,nchannels
 			read(1,*) dummy, counts(i,j)
 		end do
-		write(*,*) "Calculating: counts*", V(iann,i), " * ", rho(i) !, " / ",exposure 
+		! write(*,*) "Calculating: counts*", V(iann,i), " * ", rho(i) !, " / ",exposure 
 		spectra(iann,:) = spectra(iann,:) + counts(i,:)*V(iann,i)*rho(i) !/exposure	
 	end do
 end do

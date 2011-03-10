@@ -11,7 +11,7 @@ proc xspecpro { args } {
 	
 	set f "$XIGAR/data/clusters/fakec"
 	#set falt "data/clusters/fakec"
-	
+
 	# Calculate temp and density profiles from parameters
 	# for {set i 1} {$i <= $N} {incr i} {
 	# 	set temp_profile($i) [expr pow(([lindex $r $i]/$rt),(-$ta))/pow(1+pow([lindex $r $i]/$rt,$tb),($tc/$tb))]
@@ -19,10 +19,36 @@ proc xspecpro { args } {
 	# 	set density_profile($i) [expr pow($n0,2.) * pow([lindex $r $i]/$rc,-$da) / pow(1.+pow([lindex $r $i]/$rc,2.),($db-$da))]
 	# 	puts $density_profile($i)
 	# }
+
+	# # # # # # # # # # # # # Define resolution in each bin # # # # # # # # # # # #
+	set resolution 2
+	set bin 0
+	set r_bin_size 0.
+	foreach item $r {
+		if {$bin > 0} then {
+			set r_bin_size [expr [lindex $r $bin]-[lindex $r [expr $bin-1]]]
+			puts "$r_bin_size = r($bin)-r($bin-1) = [expr [lindex $r $bin]-[lindex $r [expr $bin-1]]]"
+			set r_bin_step [expr $r_bin_size/$resolution]
+			puts $r_bin_step
+			for {set i 1} {$i <= $resolution} {incr i} {
+				set r_resolved([expr $resolution*($bin) + $i]) [expr [lindex $r [expr $bin-1]] + $i*$r_bin_step]
+				puts "Setting r_resolved([expr $resolution*($bin) + $i]) = [lindex $r [expr $bin-1]] + $i*$r_bin_step = [expr [lindex $r [expr $bin-1]] + $i*$r_bin_step]"
+			}			
+		} else {
+			set r_bin_size [lindex $r $bin]
+			set r_bin_step [expr $r_bin_size/$resolution]
+			for {set i 1} {$i <= $resolution} {incr i} {
+				set r_resolved([expr $resolution*($bin) + $i]) [expr 0 + $i*$r_bin_step]
+				puts "Setting r_resolved([expr $resolution*($bin) + $i]) = 0 + $i*$r_bin_step = [expr 0 + $i*$r_bin_step]"
+			}
+		}
+		incr bin
+	}
+	#set r r_resolved
 	
 	puts "TEMP profile:"
 	set i 1
-	foreach item $r {
+	foreach item [array get r_resolved] {
 		set r $item
 		set temp_profile($i) 12.
 		#[expr $tnorm*pow(($r/$rt),(-$ta))/pow(1+pow($r/$rt,$tb),($tc/$tb))]
@@ -30,8 +56,10 @@ proc xspecpro { args } {
 		# COMMENT: Density is applied in FORTRAN code (xspecpro.f90)
 		#set density_profile($i) [expr pow($n0,2.) * pow($r/$rc,-$da) / pow(1.+pow($r/$rc,2.),($db-0.5*$da))]
 		incr i
-   }
+	   }
 	
+	set N [array size r_resolved]
+	# # # # # # # # # # # # # Define resolution in each bin # # # # # # # # # # # #
 	
 	# Fake profiles defines in config/fakec.tcl
 

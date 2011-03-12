@@ -21,7 +21,7 @@ proc xspecpro { args } {
 	# }
 
 	# # # # # # # # # # # # # Define resolution in each bin # # # # # # # # # # # #
-	set resolution 2
+	set resolution 10
 	set bin 0
 	set r_bin_size 0.
 	foreach item $r {

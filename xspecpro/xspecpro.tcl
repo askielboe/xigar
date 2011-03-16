@@ -22,6 +22,8 @@ proc xspecpro { args } {
 
 	# # # # # # # # # # # # # Define resolution in each bin # # # # # # # # # # # #
 	set resolution 10
+	# # # # # # # # # # # # #	
+	
 	set bin 0
 	set r_bin_size 0.
 	foreach item $r {
@@ -45,20 +47,20 @@ proc xspecpro { args } {
 		incr bin
 	}
 	#set r r_resolved
+	set N [array size r_resolved]
 	
 	puts "TEMP profile:"
-	set i 1
-	foreach item [array get r_resolved] {
-		set r $item
-		set temp_profile($i) 12.
-		#[expr $tnorm*pow(($r/$rt),(-$ta))/pow(1+pow($r/$rt,$tb),($tc/$tb))]
-		puts $temp_profile($i)
+	for {set i 1} {$i <= [expr $N]} {incr i} {
+		set r $r_resolved($i)
+		# set temp_profile($i) 12.
+		# Vikhlinin et al. 2006:
+		set temp_profile($i) [expr $tnorm*((1+$ta*($r/$rt))/pow(1+pow($r/$rt,2),$tb))]
+		# [expr $tnorm*pow(($r/$rt),(-$ta))/pow(1+pow($r/$rt,$tb),($tc/$tb))]
+		puts "$r $temp_profile($i)"
 		# COMMENT: Density is applied in FORTRAN code (xspecpro.f90)
-		#set density_profile($i) [expr pow($n0,2.) * pow($r/$rc,-$da) / pow(1.+pow($r/$rc,2.),($db-0.5*$da))]
-		incr i
-	   }
+		# set density_profile($i) [expr pow($n0,2.) * pow($r/$rc,-$da) / pow(1.+pow($r/$rc,2.),($db-0.5*$da))]
+	}
 	
-	set N [array size r_resolved]
 	# # # # # # # # # # # # # Define resolution in each bin # # # # # # # # # # # #
 	
 	# Fake profiles defines in config/fakec.tcl
@@ -82,14 +84,38 @@ proc xspecpro { args } {
 if {[exec ls $f] == ""} then {
 	
 	#dummy 0.3 11. $nchannels lin
-		
+	
+	# USING CONSTANT RESPONSE
+	set file_response $XIGAR/data/clusters/$cname/1666_3.wrmf
+	set file_arf $XIGAR/data/clusters/$cname/1666_3.warf
+	
+	# vvvvvvvvvvvvvvvvvvv RUNNING WITH CONSTANT TEMPERATURE & RESPONSE vvvvvvvvvvvvvvvvvvv
+	
+	# data none
+	# model none
+	# 
+	# model mekal & $temp_profile(1) & $nH & $abundance & $redshift & $switch & 1 &
+	# addcomp 2 wabs & $Hcolumn
+	# #addcomp 3 constant & [expr 1./$exposure]
+	# 
+	# fakeit none & $file_response & $file_arf & n & & $f/fakec.tmp & $exposure &
+	
+	# for {set iann 1} {$iann <= $N} {incr iann} {
+	# 	
+	# 	for {set i $iann} {$i <= $N} {incr i} {
+	# 		if {$i > $N} then break
+	# 		
+	# 		puts "DUMPING spectrum to file: fakec_$iann-$i.txt"
+	# 		fdump infile=$f/fakec.tmp outfile=$f/fakec_$iann-$i.txt columns='COUNTS' rows=1-1070 prhead=no
+	# 	}
+	# }
+	# ^^^^^^^^^^^^^^^^^^^ RUNNING WITH CONSTANT TEMPERATURE & RESPONSE ^^^^^^^^^^^^^^^^^^^	
+	
 	for {set iann 1} {$iann <= $N} {incr iann} {
 			
-		# Set correct response matrix for the given bin
+		# CHANGE RESPONSE AS A FUNCTION OF ANNULUS
 		# set file_response $XIGAR/data/clusters/$cname/$cprefix$iann.wrmf
 		# set file_arf $XIGAR/data/clusters/$cname/$cprefix$iann.warf
-		set file_response $XIGAR/data/clusters/$cname/1666_3.wrmf
-		set file_arf $XIGAR/data/clusters/$cname/1666_3.warf
 		
 		for {set i $iann} {$i <= $N} {incr i} {
 			if {$i > $N} then break

@@ -26,7 +26,13 @@ set Hcolumn 0.026
 
 # Radii of annuli
 # set r [list 39.6749 60.9293 80.7667 102.021 124.692 153.032]
-set r [list 0.02 0.05 0.08 0.1 0.14 0.18 0.25 0.4 0.6 0.7 0.8 1.]
+# set r [list 0.02 0.05 0.08 0.10 0.14 0.18 0.25 0.40 0.60 0.70 0.80 1.]
+# set r [list 0.04 0.06 0.08 0.10 0.12 0.15 0.18 0.22 0.28 0.37 0.56 1.]
+# set r [list 0.29 0.41 0.50 0.58 0.65 0.71 0.77 0.82 0.87 0.92 0.96 1.]
+# set r [list 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.11 0.14 0.23 1.]
+# set r [list 0.04 0.06 0.08 0.10 0.12 0.14 0.17 0.21 0.26 0.34 0.49 1.]
+# set r [list [expr 1./12.] [expr 2./12.] [expr 3./12.] [expr 4./12.] [expr 5./12.] [expr 6./12.] [expr 7./12.] [expr 8./12.] [expr 9./12.] [expr 10./12.] [expr 11./12.] [expr 12./12.]]
+set r [list 0.04 0.06 0.08 0.10 0.12 0.14 0.17 0.21 0.26 0.34 0.49 1.]
 
 # Number of annuli
 set N [llength $r]
@@ -51,18 +57,23 @@ set param_break 3.; # Set the value of the break between fits in ROOT.
 set exposure 41796.2
 
 # Set temperature profile parameters
-set tnorm 130.
-set rt 5.
-set ta 1.2
-set tb 2.
+set tnorm 7. ; # Johan: P1
+set rt 0.15 ; # Johan: P4
+set ta 1. ; # Johan: P2
+set tb 0.55 ; # Johan: P3
 set tc 0.01
 
 # Set density profile parameters
 # n0 = 100., rc = 0.01, da = 1., db = 0.5
-set n0 1.3
-set rc 0.1
-set da 0.9
-set db 2.
+# set n0 1.3
+# set rc 0.1
+# set da 0.9
+# set db 2.
+
+set n0 1.
+set rc 0.15
+set da 0.8
+set db 0.75
 
 # NON-SPHERICAL PARAMETERS
 set alpha 0.

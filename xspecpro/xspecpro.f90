@@ -15,7 +15,7 @@ implicit none
 CHARACTER 						:: dummy*7, fnamein*50, fnameout*50
 !INTEGER,PARAMETER				:: N = nannuli !, nchannels = 1024
 !!! Define resolution in each bin !!!
-INTEGER,PARAMETER				:: resolution = 10
+INTEGER,PARAMETER				:: resolution = 1
 INTEGER,PARAMETER				:: N = nannuli*resolution
 REAL							:: r_bin_size, r_bin_step
 REAL,DIMENSION(N)				:: r_resolved
@@ -56,15 +56,20 @@ r = r_resolved
 !r = rannuli
 
 ! Calculate density profile
+open(1,file='../data/clusters/fakec/density_profile.txt', status="replace", form='FORMATTED')
 do i=1,N
-	rho(i) = n0**2. * (r(i)/rc)**(-da) / (1.+r(i)**2./rc**2.)**(3.*db-da/2.)
+	! rho(i) = 1.
+	! rho(i) = n0**2. * (r(i)/rc)**(-da) / (1.+r(i)**2./rc**2.)**(3.*db-da/2.)
+	rho(i) = n0**2. * (r(i)/rc)**(-da/2.) / (1.+r(i)**2./rc**2.)**(3./2.*db-da/4.)
 	write(*,*) "Rho(r=",r(i),") = ",rho(i)
 	!rho(i) = n0**2 * (r(i)/rc)**(-da) / (1+r(i)**2/rc**2)**(1-da)
+	write(1,'(F20.10)') rho(i)
 end do
+close(1)
 
 ! Calculate volume-elements
 V = vol(N, alpha, beta, r)
-! write(*,*) "Volumes:", V
+write(*,*) "Volumes:", V
 
 ! Summing over resoluted bins
 do iann = 1,N
@@ -83,10 +88,11 @@ do iann = 1,N
 		do j = 1,nchannels
 			read(1,*) dummy, counts(i,j)
 		end do
-		! write(*,*) "Calculating: counts*", V(iann,i), " * ", rho(i) !, " / ",exposure 
-		spectra(iann,:) = spectra(iann,:) + counts(i,:)*V(iann,i)*rho(i) !/exposure	
+		write(*,*) "Calculating: counts*", V(iann,i), " * ", rho(i), "^2" !, " / ",exposure 
+		spectra(iann,:) = spectra(iann,:) + counts(i,:)*V(iann,i)*rho(i)**2 !/exposure
 	end do
 end do
+close(1)
 
 !!! Define resolution in each bin !!! Sum bins !!! Define resolution in each bin !!!
 ! Summing over annuli
@@ -104,6 +110,8 @@ end do
 !!! Define resolution in each bin !!! Sum bins !!! Define resolution in each bin !!!
 
 write(*,*) 'Writing output files...'
+! Write integrated counts to file
+open(3,file='../data/clusters/fakec/integrated_counts.txt', status="replace", form='FORMATTED')
 ! Write output to txt files
 do i = 1,nannuli
 	counts_integrated(i) = 0.
@@ -115,7 +123,9 @@ do i = 1,nannuli
 	end do
 	close(2)
 	write(*,*) "Integrated counts in annulus ", i, ": ",counts_integrated(i)
+	write(3,'(F20.10,F20.10)') r_resolved(i), counts_integrated(i)
 end do
+close(3)
 
 ! ! Write output to FORTRAN module files
 ! write(fnameout,'(a)') '../data/clusters/fakec/fakec.f90'

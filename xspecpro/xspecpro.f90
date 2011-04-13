@@ -130,12 +130,31 @@ do i = 1,nannuli
 end do
 close(3)
 
-! ! Write output to FORTRAN module files
+! Write output to FORTRAN module files (NEW WITH RESOLUTION)
+write(fnameout,'(a)') '../data/clusters/fakec/fakec.f90'
+open(2,file=fnameout, status="replace", form='FORMATTED')
+write(2,'(a)') "MODULE rdata"
+write(2,'(a)') "IMPLICIT NONE"
+write(2,'(a,I4,a,I2,a)') "REAL,DIMENSION(",nchannels,"*",nannuli,") :: rspeclong = (/ &"
+do i = 1,nannuli-1
+	do j = 1,nchannels
+		write(2,'(F20.0,a)') spectra_summed(i,j),", &"
+	end do
+end do
+do j = 1,nchannels-1
+	write(2,'(F20.0,a)') spectra_summed(nannuli,j),", &"
+end do
+write(2,'(F20.0,a)') spectra_summed(nannuli,nchannels),"/)"
+!write(2,'(a,I1,a,I4,a)') "rspec = RESHAPE(rspec, (/ ",N,",",nchannels," /))"
+write(2,'(a)') "END MODULE rdata"
+close(2)
+
+! ! Write output to FORTRAN module files (OLD NO RESOLUTION)
 ! write(fnameout,'(a)') '../data/clusters/fakec/fakec.f90'
 ! open(2,file=fnameout, status="replace", form='FORMATTED')
 ! write(2,'(a)') "MODULE rdata"
 ! write(2,'(a)') "IMPLICIT NONE"
-! write(2,'(a,I4,a,I1,a)') "REAL,DIMENSION(",nchannels,"*",nannuli,") :: rspeclong = (/ &"
+! write(2,'(a,I4,a,I2,a)') "REAL,DIMENSION(",nchannels,"*",nannuli,") :: rspeclong = (/ &"
 ! do i = 1,N-1
 ! 	do j = 1,nchannels
 ! 		write(2,'(F20.10,a)') spectra(i,j),", &"

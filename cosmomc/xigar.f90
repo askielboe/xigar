@@ -34,25 +34,30 @@ function temp_profile(par1, par2, par3)
 
 	use xigar_params
 
+	INTEGER,PARAMETER			:: N = nannuli*resolution
 	REAL,intent(in) 			:: par1, par2, par3
 	INTEGER 						:: i
-	REAL,DIMENSION(nannuli) :: temp_profile, r
+	REAL,DIMENSION(N)			:: temp_profile, r
 	REAL							:: rtmc
 	REAL							:: a 
 	REAL							:: b 
 	REAL							:: c
 	LOGICAL						:: outrange
 	
-	r=rannuli
+	r = rannuli_resolved
 	rtmc = par1
 	a = par2
-	c = par3
-	b = 2.
+	b = par3
+	!c = 0.01
 	
 	outrange = .false.
 	
-	do i = 1,nannuli
-		temp_profile(i) = tnorm*(r(i)/rtmc)**(-a)/(1+(r(i)/rtmc)**b)**(c/b)
+	do i = 1,N
+		! OLD PROFILE
+		! temp_profile(i) = tnorm*(r(i)/rtmc)**(-a)/(1+(r(i)/rtmc)**b)**(c/b)
+		! NEW PROFILE
+		temp_profile(i) = tnorm*(1.+a*r(i)/rtmc)/((1.+(r(i)/rtmc)**2.)**b)
+		! write(*,*) "temp_profile(",i,") = ",temp_profile(i)
 		if (temp_profile(i) < 0.3 .OR. temp_profile(i) > 11.) then
 			outrange = .true.
 			exit
@@ -60,7 +65,7 @@ function temp_profile(par1, par2, par3)
 	end do
 	
 	if (outrange .eqv. .true.) then
-		do i = 1,nannuli
+		do i = 1,N
 			temp_profile(i) = 0
 		end do
 	end if
@@ -72,22 +77,28 @@ function density_profile(par1, par2, par3)
 	use xigar_params
 
 	!INTEGER,PARAMETER			:: nannuli = 6
+	INTEGER,PARAMETER			:: N = nannuli*resolution
 	REAL,intent(in) 			:: par1, par2, par3!, par4
 	INTEGER 						:: i
-	REAL,DIMENSION(nannuli) :: density_profile, r
+	REAL,DIMENSION(N) 		:: density_profile, r
 	REAL							:: n0mc
 	REAL							:: rcmc
 	REAL							:: alphamc
 	REAL							:: betamc
 	
-	r=rannuli
+	r = rannuli_resolved
 	n0mc = par1
 	rcmc = par2
 	alphamc = par3
-	!betamc = par4
+	! betamc = par4
+	betamc = 0.7 ! debsity beta
 
-	do i = 1,nannuli
-		density_profile(i) = n0mc**2 * (r(i)/rcmc)**(-alphamc) / (1+r(i)**2/rcmc**2)**(1-alphamc)
+	do i = 1,N
+		! OLD PROFILE density_profile(i) = n0mc**2 * (r(i)/rcmc)**(-alphamc) / (1+r(i)**2/rcmc**2)**(1-alphamc)
+		! NEW PROFILE
+		density_profile(i) = n0mc**2. * (r(i)/rcmc)**(-alphamc/2.) / (1+r(i)**2/rcmc**2)**(3./2.*betamc-alphamc/4.)
+		! write(*,*) "n0mc, rcmc, alphamc, betamc = ",n0mc,rcmc,alphamc,betamc
+		! write(*,*) "density_profile(",r(i),") = ", density_profile(i)
 	end do
 
 end function density_profile
@@ -101,19 +112,23 @@ function xraylike(Params)
 	!use real_spectrum
 	
 	! TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY
-	REAL,DIMENSION(6,1024) :: rspec
+	REAL,DIMENSION(nannuli,nchannels) :: rspec
 	! TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY
 
 	REAL,DIMENSION(9),intent(in)	:: Params
 
-	INTEGER								:: i,j, cutoff, startoff
-	INTEGER,PARAMETER					:: N = nannuli, nbins = nchannels
+	INTEGER								:: i,j
+	INTEGER,PARAMETER					:: startoff = 20, cutoff = 350 ! Define range in which the fit tries to converge
+	INTEGER,PARAMETER					:: N = nannuli*resolution, nbins = nchannels
 
 	REAL,DIMENSION(N)					:: T, rho
 	REAL									:: alphamc, betamc
 	
-	REAL,DIMENSION(N,nchannels)	:: spectrum
-	REAL									:: xraylike, bestxraylike, chisquare
+	REAL,DIMENSION(cutoff-startoff)	:: spectrum_summed, rspec_summed
+	REAL,DIMENSION(nannuli,nchannels)	:: spectrum
+	REAL									:: xraylike, bestxraylike, chisquare, reallike
+	
+	! write(*,*) "FUNCTION: XRAYLIKE CALLED"
 	
 	!T = (/ 7.1676579, 6.8666706, 6.6758351, 6.5216861, 6.3921208, 6.2625418 /)
 	T = temp_profile(Params(1),Params(2),Params(3))
@@ -125,21 +140,18 @@ function xraylike(Params)
 	
 	alphamc = Params(6)
 	!write(*,*) "Alpha = ", alpha
-	betamc = 1. ! Params(10) ! Or maybe a constant?
+	!betamc = 3.0 ! Beta sphvol! Params(10) ! Or maybe a constant? ! Beta sphvol!
+	betamc = Params(7)
 	
 	spectrum = prospec(T,rho,alphamc,betamc)
 	
 	! CALCULATE THE LIKELIHOOD
 	! TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY
-	rspec = TRANSPOSE(RESHAPE(rspeclong, (/ 1024,6 /)))
+	rspec = TRANSPOSE(RESHAPE(rspeclong, (/ nchannels,nannuli /)))
 	! TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY
 	xraylike = 0.
 	
-	! Define range in which the fit tries to converge
- startoff = 20
- cutoff = 500
-!  startoff = 150
-!  cutoff = 350
+! ------------------------ OLD METHOD: SUM INDIVIDUALLY ------------------------
 	
 	do i=1,N
 		do j=startoff,cutoff
@@ -150,54 +162,97 @@ function xraylike(Params)
 !  				write(*,*) T
 ! 			end if
 ! 			write(*,*) rho
-!			write(*,*) alpha			
+! 			write(*,*) alpha			
 ! 			write(*,*) "i = ",i," and j = ",j
 ! 			write(*,*) "Calculating: (",spectrum(i,j)," - ",rspec(i,j),")^2"
-			if (rspec(i,j) > 0) then
-				xraylike = xraylike + ( (spectrum(i,j)-rspec(i,j)) )**2./rspec(i,j)
-			end if
-! 			write(*,*) "RESULT: ",( (spectrum(i,j)-rspec(i,j)) )**2.
+			!if (spectrum(i,j) > 0) then
+				xraylike = xraylike + ( (spectrum(i,j)-rspec(i,j)) )**2./spectrum(i,j)
+			!else
+			!	write(*,*) "WARNING: rspec <= 0 !!!"
+			!end if
+ 			!write(*,*) "RESULT: ",( (spectrum(i,j)-rspec(i,j)) )**2.
 		end do
+		!write(*,*) "xraylike summed up to bin ",i," = ",xraylike
 	end do
 	xraylike = xraylike/(cutoff-startoff)/N
 	!write(*,*) xraylike
 	!write (*,*) Params(3)
 
+! ------------------------ OLD METHOD: SUM INDIVIDUALLY ------------------------
+
+! ------------------------ NEW METHOD: SUM FIRST, THEN CALCULATE LIKELIHOOD ------------------------
+! ------------------------ WARNING!!! DOES NOT WORK!!! ------------------------
+! do i = startoff,cutoff
+! 	if (i > cutoff) exit
+! 	spectrum_summed(i) = 0.
+! 	rspec_summed(i) = 0.
+! 	do j=1,N
+! 		spectrum_summed(i) = spectrum_summed(i) + spectrum(j,i)
+! 		rspec_summed(i) = rspec_summed(i) + rspec(j,i)
+! 	end do
+! end do
+! 
+! do i = startoff,cutoff
+! 	xraylike = xraylike + ( (spectrum_summed(i)-rspec_summed(i)) )**2./spectrum_summed(i)
+! end do
+! 
+! xraylike = xraylike/(cutoff-startoff)/N
+! ------------------------ WARNING!!! DOES NOT WORK!!! ------------------------
+! ------------------------ NEW METHOD: SUM FIRST, THEN CALCULATE LIKELIHOOD ------------------------
+
+if (xraylike .eq. 0.) then
+	xraylike = 100000.
+end if
+
 ! Write all parameters to files in each iteration, to look for degeneracy.
 open(1,file='parameters.txt',access = 'append')
-write(1,*) xraylike, Params
+	!write(1,'(F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10)') exp(-1./2.*xraylike), Params
+	write(1,*) exp(-1./2.*xraylike), Params
 close(1)
 
 ! Calculate if this chi2 is better than previous ones. If it is, we print the spectra to files.
 open(1,file='bestxraylike.txt',form='formatted')
-! write(1,*) 1000000000.
 read(1,*) bestxraylike
 close(1)
 !write(*,*) "COMPARING: ", xraylike, " < ", bestxraylike, " RESULT = ", (xraylike < bestxraylike)
+!if (.TRUE.) then
 if (xraylike < bestxraylike) then
-   write(*,*) "NEW BEST CHI2: ", xraylike
-   write(*,*) "BEST PARAMETERS: ", Params
-   open(1,file='bestxraylike.txt',form='formatted')
-   write(1,'(e20.10)') xraylike
-   close(1)
-   !if (T(1) > 0) then
-    !write(*,*) T
-    open(1,file='spectrum.txt',form='formatted')
-    do i = startoff,cutoff
-       write(1,'(i4, a1, e20.10)') i, ' ', spectrum(1,i)
-    end do
-    close(1)
-       !write(*,*) xraylike
-    open(1,file='rspec.txt',form='formatted')
-    do i = startoff,cutoff
-          write(1,'(i4, a1, e20.10)') i, ' ', rspec(1,i)
-       end do
-    close(1)
-   !end if
+	write(*,*) "NEW BEST CHI2: ", xraylike
+	write(*,*) "BEST PARAMETERS: ", Params
+	open(1,file='bestxraylike.txt',form='formatted')
+	write(1,'(e20.10)') xraylike
+	close(1)
+	!if (T(1) > 0) then
+	!write(*,*) T
+	open(1,file='spectrum.txt',form='formatted')
+	do i = startoff,cutoff
+		if (i > cutoff) exit
+		spectrum_summed(i) = 0.
+		do j=1,N
+			spectrum_summed(i) = spectrum_summed(i) + spectrum(j,i)
+		end do
+		write(1,'(i4, a1, e20.10)') i, ' ', spectrum_summed(i)
+	end do
+	close(1)
+	!write(*,*) xraylike
+	open(1,file='rspec.txt',form='formatted')
+	do i = startoff,cutoff
+		if (i > cutoff) exit
+		rspec_summed(i) = 0.
+		do j=1,N
+			rspec_summed(i) = rspec_summed(i) + rspec(j,i)
+		end do
+		write(1,'(i4, a1, e20.10)') i, ' ', rspec_summed(i)
+	end do
+	close(1)
+	!end if
 end if
 
 ! 	xraylike=(Params(1)-3.)**2. !+ (Params(2) - 10.)**2.
 
+xraylike = exp(-1./2.*xraylike)
+
+return
 end function xraylike
 
 function prospec(T,rho,alphamc,betamc)
@@ -207,15 +262,16 @@ function prospec(T,rho,alphamc,betamc)
 	use sphvol
 	use resp_matrix
 
-	INTEGER, PARAMETER				:: mresp=1024, nresp=1070
+	INTEGER, PARAMETER				:: mresp=nchannels, nresp=nchannels2
 	REAL,DIMENSION(mresp,nresp) 	:: resp
 
-	INTEGER,PARAMETER					::	N = nannuli, nbins = nchannels
+	INTEGER,PARAMETER					::	N = nannuli*resolution, nbins = nchannels
 	REAL,intent(in)					:: alphamc, betamc
 	REAL,DIMENSION(N),intent(in) 	:: T, rho
 
-	INTEGER								:: i,j
-	REAL,DIMENSION(N,nchannels)	:: prospec, prospecraw
+	INTEGER								:: i,j,bin
+	REAL,DIMENSION(nannuli,nchannels) :: prospec
+	REAL,DIMENSION(N,nchannels)	:: prospecraw
 	REAL,DIMENSION(N,nchannels)	:: rspec
 	!REAL,DIMENSION(nchannels)			::	subspectrum, rdummy
 	REAL,DIMENSION(N)					:: a
@@ -223,7 +279,7 @@ function prospec(T,rho,alphamc,betamc)
 	REAL									:: exp
 
 	! a (1D array):	Radii for the observational annuli.
-	a = rannuli
+	a = rannuli_resolved
 
 	! Calculate volume-elements
 	V = vol(N, alphamc, betamc, a)
@@ -233,6 +289,7 @@ function prospec(T,rho,alphamc,betamc)
 		prospecraw(i,:) = 0.
 		do j=i,N
 			prospecraw(i,:) = prospecraw(i,:) + usynthspec(T(j),rho(j))*V(i,j)
+			!write(*,*) "V(i,j) = V(",i,",",j,") = ",V(i,j)
 		end do
 	end do
 	
@@ -286,12 +343,14 @@ function usynthspec(T, rho) ! Calculate unit-volume synthetic spectrum for given
 	if (T < param_break) then ! Limits: Lowpar: t = 0..3 keV, Highpar: t = 3..15 keV
 		do i = 1,nchannels
 			usynthspec(i) = lowpar1(i) * T**3. + lowpar2(i) * T**2. + lowpar3(i)*T + lowpar4(i)
-			usynthspec(i) = e**usynthspec(i) * rho
+			usynthspec(i) = exp(usynthspec(i)) * rho ** 2. * exposure
+			!write(*,*) "usynthspec(i) = ",usynthspec(i)
 		end do
 	else if (T >= param_break) then
 		do i = 1,nchannels
 			usynthspec(i) = highpar1(i) * T**3. + highpar2(i) * T**2. + highpar3(i)*T + highpar4(i)
-			usynthspec(i) = e**usynthspec(i) * rho
+			usynthspec(i) = exp(usynthspec(i)) * rho ** 2. * exposure
+			!write(*,*) "usynthspec(i) = ",usynthspec(i)
 		end do
 	end if
 end function usynthspec

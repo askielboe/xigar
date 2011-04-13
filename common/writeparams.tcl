@@ -1,8 +1,32 @@
 proc writeparams { args } {
 	set cname $args
 	
-	source settings.tcl
+	source ../settings.tcl
 	source $XIGAR/config/$cname.tcl
+	
+	# Calculate resoluted bins
+	set bin 0
+	set r_bin_size 0.
+	foreach item $r {
+		if {$bin > 0} then {
+			set r_bin_size [expr [lindex $r $bin]-[lindex $r [expr $bin-1]]]
+			puts "$r_bin_size = r($bin)-r($bin-1) = [expr [lindex $r $bin]-[lindex $r [expr $bin-1]]]"
+			set r_bin_step [expr $r_bin_size/$resolution]
+			puts $r_bin_step
+			for {set i 1} {$i <= $resolution} {incr i} {
+				set r_resolved([expr $resolution*($bin) + $i]) [expr [lindex $r [expr $bin-1]] + $i*$r_bin_step]
+				puts "Setting r_resolved([expr $resolution*($bin) + $i]) = [lindex $r [expr $bin-1]] + $i*$r_bin_step = [expr [lindex $r [expr $bin-1]] + $i*$r_bin_step]"
+			}			
+		} else {
+			set r_bin_size [lindex $r $bin]
+			set r_bin_step [expr $r_bin_size/$resolution]
+			for {set i 1} {$i <= $resolution} {incr i} {
+				set r_resolved([expr $resolution*($bin) + $i]) [expr 0 + $i*$r_bin_step]
+				puts "Setting r_resolved([expr $resolution*($bin) + $i]) = 0 + $i*$r_bin_step = [expr 0 + $i*$r_bin_step]"
+			}
+		}
+		incr bin
+	}
 	
 # Write FORTRAN xspec-parameters file
 set fout [open "$XIGAR/xigar_params.f90" w]
@@ -10,7 +34,8 @@ set fout [open "$XIGAR/xigar_params.f90" w]
 	puts $fout "module xigar_params"
 	puts $fout "implicit none"
 	puts $fout "CHARACTER :: cname*[string length $cname]='$cname', cprefix*[string length $cprefix]='$cprefix'"
-	puts $fout "INTEGER,PARAMETER :: nchannels=$nchannels, nchannels2=$nchannels2, nspectra=$nspectra, nannuli=$N"
+	puts $fout "LOGICAL,PARAMETER :: use_external_response=.$use_external_response."
+	puts $fout "INTEGER,PARAMETER :: nchannels=$nchannels, nchannels2=$nchannels2, nspectra=$nspectra, nannuli=$N, resolution=$resolution"
 	puts $fout "REAL,PARAMETER :: param_min=$param_min, param_max=$param_max, exposure=$exposure, real_exposure=$real_exposure, param_break=$param_break"
 	puts $fout "REAL,PARAMETER :: rt=$rt, ta=$ta, tb=$tb, tc=$tc, tnorm=$tnorm"
 	puts $fout "REAL,PARAMETER :: n0=$n0, rc=$rc, da=$da, db=$db"
@@ -25,6 +50,16 @@ set fout [open "$XIGAR/xigar_params.f90" w]
 			puts $fout "$item &"
 		}
 		incr i			
+	}
+	puts $fout "/)"
+	puts $fout "REAL,DIMENSION([expr $N*$resolution]) :: rannuli_resolved= (/ &"
+	for {set i 1} {$i <= [expr $N*$resolution]} {incr i} {
+		if {$i < [expr $N*$resolution]} {
+			puts $fout "$r_resolved($i), &"
+		}
+		if {$i == [expr $N*$resolution]} {
+			puts $fout "$r_resolved($i) &"
+		}	
 	}
 	puts $fout "/)"
 	puts $fout "end module xigar_params"

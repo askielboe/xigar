@@ -79,7 +79,8 @@ n = 1
 
 ! Write output to file
 write(*,*) 'Writing output files...'
-do ichannel = 1,nchannels2
+!do ichannel = 1,nchannels2
+do ichannel = 1,nchannels
 	write(fnameout,'(a,I5,a)') './tmp/profile_',ichannel,'.txt'
 	open(2,file=fnameout, status="replace", form='FORMATTED')
 	do n = 1,nspectra

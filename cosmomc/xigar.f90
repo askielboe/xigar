@@ -236,17 +236,36 @@ function prospec(T,rho,alphamc,betamc)
 		end do
 	end do
 	
-	! ADD RESOPONSE CONVOLUTION FROM RESPONSE.F90
-	
-	! Reshape response files into matrices
-	resp = RESHAPE( resp3, (/ 1024, 1070 /) )
-	
-	do i=1,N ! OBS: RESPONSE NEEDS TO CHANGE FOR EACH ANNULUS (i) OF COURSE
-		do j=1,nchannels
-			prospec(i,j)=sum(resp(j,1:1024)*prospecraw(i,:))
+	! Sum spectra
+	bin = 1
+	do i = 1,nannuli
+		prospec(i,:) = 0.
+		do j = 1,resolution
+			prospec(i,:) = prospec(i,:) + prospecraw(bin,:)
+			bin = bin + 1
 		end do
-		prospec(i,nchannels) = 0.
 	end do
+	
+	
+! 	! --------------------- ADD RESOPONSE CONVOLUTION ---------------------
+! 	if (use_external_response) then
+! 		!write(*,*) "APPLYING EXTERNAL RESPONSE"
+!		prospec = prospecraw
+! 	else if (.NOT. use_external_response) then
+! 		!write(*,*) "APPLYING INTERNAL RESPONSE MATRICES"
+! 		! Reshape response files into matrices
+! 		resp = RESHAPE( resp3, (/ nchannels, nchannels2 /) )
+! 
+! 		do i=1,N ! OBS: RESPONSE NEEDS TO CHANGE FOR EACH ANNULUS (i) OF COURSE
+! 			do j=1,nchannels
+! 				prospec(i,j)=sum(resp(j,1:nchannels)*prospecraw(i,:))
+! 			end do
+! 			prospec(i,nchannels) = 0.
+! 		end do
+! 		
+! 	
+! 	end if
+! 	! --------------------- ADD RESOPONSE CONVOLUTION ---------------------
 
 end function prospec
 

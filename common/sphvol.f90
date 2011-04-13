@@ -19,6 +19,7 @@ contains
 function vol(i, alpha, beta, a)
 
 REAL,PARAMETER						:: e = 2.71828183, Pi = 3.1415926535897932385
+INTEGER								:: counter
 INTEGER, intent(in)				:: i
 REAL, intent(in)					:: alpha, beta
 REAL,DIMENSION(i), intent(in)	:: a
@@ -26,9 +27,17 @@ REAL,DIMENSION(i)					::	b
 REAL,DIMENSION(i,i)				:: vol
 INTEGER								:: is, ia
 
-b = 1./0.7*a
-! b = a*(beta + alpha*a)
+! b = 1./0.7*a
+b = a*(beta + alpha*a)
+! b = Log10(a)*a**2+beta*a
 !write(*,*) b
+
+! Prevent the cluster from going from prolate to oblate, instead we enforce prolate -> spherical.
+do counter = 1, i
+	if (b(counter) < a(counter)) then
+		b(counter) = a(counter)
+	end if
+end do
 
 ia = 1
 do

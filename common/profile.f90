@@ -83,7 +83,7 @@ do ichannel = 1,nchannels2
 	write(fnameout,'(a,I5,a)') './tmp/profile_',ichannel,'.txt'
 	open(2,file=fnameout, status="replace", form='FORMATTED')
 	do n = 1,nspectra
-			write(2,'(F7.3,a,F12.7)') params(n), ' ', count(n,ichannel)/exposure
+			write(2,'(F7.3,a,F20.10)') params(n), ' ', count(n,ichannel)/exposure
 	end do
 	close(2)
 end do

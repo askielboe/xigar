@@ -19,10 +19,6 @@ proc xspecpro { args } {
 	# 	set density_profile($i) [expr pow($n0,2.) * pow([lindex $r $i]/$rc,-$da) / pow(1.+pow([lindex $r $i]/$rc,2.),($db-$da))]
 	# 	puts $density_profile($i)
 	# }
-
-	# # # # # # # # # # # # # Define resolution in each bin # # # # # # # # # # # #
-	set resolution 10
-	# # # # # # # # # # # # #	
 	
 	set bin 0
 	set r_bin_size 0.

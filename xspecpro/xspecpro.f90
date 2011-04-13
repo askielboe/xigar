@@ -15,15 +15,15 @@ implicit none
 CHARACTER 						:: dummy*7, fnamein*50, fnameout*50
 !INTEGER,PARAMETER				:: N = nannuli !, nchannels = 1024
 !!! Define resolution in each bin !!!
-INTEGER,PARAMETER				:: resolution = 1
+!! INTEGER,PARAMETER				:: resolution = 10 DEFINED IN SETTINGS FILE!
 INTEGER,PARAMETER				:: N = nannuli*resolution
-REAL							:: r_bin_size, r_bin_step
+REAL								:: r_bin_size, r_bin_step
 REAL,DIMENSION(N)				:: r_resolved
 !!! Define resolution in each bin !!!
 INTEGER							:: i, iann, j, bin
-REAL,DIMENSION(N) 				:: r, counts_integrated
+REAL,DIMENSION(N) 			:: r, counts_integrated
 REAL,DIMENSION(N)				:: rho
-REAL,DIMENSION(N,N)				:: V
+REAL,DIMENSION(N,N)			:: V
 REAL,DIMENSION(nannuli,nchannels) :: spectra_summed
 REAL,DIMENSION(N,nchannels)		:: counts, spectra
 CHARACTER*13	 				:: format_string
@@ -68,14 +68,18 @@ end do
 close(1)
 
 ! Calculate volume-elements
+write(*,*) "Calling V = vol(N, alpha, beta, r) = vol(",N,",",alpha,",",beta,"r)"
 V = vol(N, alpha, beta, r)
-write(*,*) "Volumes:", V
+!write(*,*) "Volumes:", V
+
+write(*,*) "Summing",N,"spectra..."
 
 ! Summing over resoluted bins
 do iann = 1,N
 	spectra(iann,:) = 0.
 	! Read in all spectra for the given annulus
 	do i = iann,N ! Loop through all shells
+		! DYNAMIC FORMAT CONSTRUCTION
 		! Get number of digits in iann and i and construct format
 		n_int1 = log10(REAL(iann)) + 1.
 		n_int2 = log10(REAL(i)) + 1.
@@ -88,7 +92,7 @@ do iann = 1,N
 		do j = 1,nchannels
 			read(1,*) dummy, counts(i,j)
 		end do
-		write(*,*) "Calculating: counts*", V(iann,i), " * ", rho(i), "^2" !, " / ",exposure 
+		!write(*,*) "Calculating: counts*", V(iann,i), " * ", rho(i), "^2" !, " / ",exposure 
 		spectra(iann,:) = spectra(iann,:) + counts(i,:)*V(iann,i)*rho(i)**2 !/exposure
 	end do
 end do
@@ -106,7 +110,6 @@ do i = 1,nannuli
 	end do
 end do
 
-
 !!! Define resolution in each bin !!! Sum bins !!! Define resolution in each bin !!!
 
 write(*,*) 'Writing output files...'
@@ -118,12 +121,12 @@ do i = 1,nannuli
 	write(fnameout,'(a,I2,a)') '../data/clusters/fakec/fakec_ann',i,'.txt'
 	open(2,file=fnameout, status="replace", form='FORMATTED')
 	do j = 1,nchannels
-			write(2,'(I4,a,F20.10)') j, ' ', spectra_summed(i,j)
+			write(2,'(I4,a,F20.0)') j, ' ', spectra_summed(i,j)
 			counts_integrated(i) = counts_integrated(i) + spectra_summed(i,j)
 	end do
 	close(2)
 	write(*,*) "Integrated counts in annulus ", i, ": ",counts_integrated(i)
-	write(3,'(F20.10,F20.10)') r_resolved(i), counts_integrated(i)
+	write(3,'(F20.10,F20.0)') r_resolved(i), counts_integrated(i)
 end do
 close(3)
 
@@ -145,8 +148,13 @@ close(3)
 ! !write(2,'(a,I1,a,I4,a)') "rspec = RESHAPE(rspec, (/ ",N,",",nchannels," /))"
 ! write(2,'(a)') "END MODULE rdata"
 ! close(2)
-! 
-! write(*,'(a,I5,a)') 'Wrote ', N*2 ,' files to xigar/data/clusters/fakec/...'
-! write(*,*) 'DONE PROCESSING FILES!'
+
+! Print which parameters have been used
+write(*,*) "PARAMETERS USED:"
+write(*,*) "alpha  = ",alpha
+write(*,*) "beta = ",beta
+
+write(*,'(a,I5,a)') 'Wrote ', N*2 ,' files to xigar/data/clusters/fakec/...'
+write(*,*) 'DONE PROCESSING FILES!'
 
 end program xspecpro

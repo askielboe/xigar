@@ -1,4 +1,6 @@
 # Data for cluster A2218:
+# ----------------------------------- SETTINGS ------------------------------------ #
+set use_external_response "TRUE"
 
 # --------------------------------- OBSERVATIONAL --------------------------------- #
 # Name of the cluster-observation we use response matrices from
@@ -32,7 +34,7 @@ set Hcolumn 0.026
 # set r [list 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.11 0.14 0.23 1.]
 # set r [list 0.04 0.06 0.08 0.10 0.12 0.14 0.17 0.21 0.26 0.34 0.49 1.]
 # set r [list [expr 1./12.] [expr 2./12.] [expr 3./12.] [expr 4./12.] [expr 5./12.] [expr 6./12.] [expr 7./12.] [expr 8./12.] [expr 9./12.] [expr 10./12.] [expr 11./12.] [expr 12./12.]]
-set r [list 0.04 0.06 0.08 0.10 0.12 0.14 0.17 0.21 0.26 0.34 0.49 1.]
+set r [list 0.04 0.06 0.08 0.10 0.12 0.15 0.18 0.22 0.27 0.34 0.46 1.]
 
 # Number of annuli
 set N [llength $r]
@@ -41,7 +43,12 @@ set N [llength $r]
 set real_exposure 41796.2
 
 # ---------------------------- FITS FILES SPECIFICS ---------------------------- #
+#FOR DUMMY RESPONSE
+#set nchannels 1024
+
+#FOR REAL (EXTERNAL) RESPONSE
 set nchannels 1024
+
 set nchannels2 1070
 
 # ------------------------------ FAKEIT PARAMETERS ----------------------------- #
@@ -51,16 +58,19 @@ set param_min 0.3	; # Decimals are limited to 3 places,
 set param_max 11.	; # this can be changed, but then has to be changed in the fortran code as well.
 set nspectra 100.	; # Note that we actually get nspectra+1 spectra!
 set param_break 3.; # Set the value of the break between fits in ROOT.
+set resolution 1  ; # Number of spectra to use per annulus.
 
 # ------------------------------ MODELS / PROFILES ----------------------------- #
 # Fake exposure (exposure to fake with) data is = 41796.2
 set exposure 41796.2
 
 # Set temperature profile parameters
-set tnorm 7. ; # Johan: P1
+
+# TEMPERATURE
+set tnorm 5. ; # Johan: P1
 set rt 0.15 ; # Johan: P4
-set ta 1. ; # Johan: P2
-set tb 0.55 ; # Johan: P3
+set ta 2.5 ; # Johan: P2
+set tb 0.7 ; # Johan: P3
 set tc 0.01
 
 # Set density profile parameters
@@ -70,11 +80,16 @@ set tc 0.01
 # set da 0.9
 # set db 2.
 
+# DENSITY
 set n0 1.
 set rc 0.15
-set da 0.8
-set db 0.75
+set da 0.8 ; # Johan: P4
+set db 0.7 ; # Johan: P3
 
 # NON-SPHERICAL PARAMETERS
-set alpha 0.
-set beta 1.
+# set alpha 0.0
+# set beta 3.0
+set alpha -3.
+set beta 3.
+# set alpha 0.8
+# set beta 0.5

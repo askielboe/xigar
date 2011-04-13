@@ -13,7 +13,8 @@ source ../settings.sh
 echo 'WARNING: This will delete all files in the ./data/clusters/fakec/ folder. Are you sure you wish to continue? (y/n)'
 read choice
 if [ $choice == 'y' ]; then
-	rm $XIGAR/data/clusters/fakec/*
+	rm -r $XIGAR/data/clusters/fakec
+	mkdir $XIGAR/data/clusters/fakec
 else
 	exit 0
 fi

@@ -16,7 +16,8 @@ cluster='fakec'
 echo 'WARNING: This will delete all files in the ./tmp folder. Are you sure you wish to continue? (y/n)'
 read choice
 if [ $choice == 'y' ]; then
-	rm ./tmp/*
+	rm -r ./tmp
+	mkdir tmp
 else
 	exit 0
 fi

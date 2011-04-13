@@ -1,5 +1,7 @@
 proc fakespec { args } {
 
+source settings.tcl
+
 # Supress output (uncomment the next line to get all output).
 chatter 5
 
@@ -22,21 +24,36 @@ chatter 5
 if {[exec ls ./tmp/] == ""} then {
 	
 	# Get cluster name and filename prefix for fits files from the user
-		puts "Please enter name of the cluster configuration file (in the config directory):"
-		gets stdin cname
-		# puts "Please enter filename prefix for FITS files, including tailing _'s (ie. 1666_ for filenames: '1666_xx.pi'):"
-		# gets stdin file_prefix
-		# puts "Please enter number of bins / annuli in the data:"
-		# gets stdin nbin
+	puts "Please enter name of the cluster configuration file (in the config directory):"
+	gets stdin cname
+	# puts "Please enter filename prefix for FITS files, including tailing _'s (ie. 1666_ for filenames: '1666_xx.pi'):"
+	# gets stdin file_prefix
+	# puts "Please enter number of bins / annuli in the data:"
+	# gets stdin nbin
 
 	# Read in parameters for the cluster
-		#source ./data/clusters/$cname/$cname.tcl
-		source ./config/$cname.tcl
+	#source ./data/clusters/$cname/$cname.tcl
+	source ./config/$cname.tcl
 	
 	# Note that this way we actually get nspectra+1 spectra!
 	set stepsize [expr ($param_max-$param_min)/($nspectra)]
 	
+	# Change the response files according to the current bin.
+	# puts "Changing response files to: $file_prefix$ibin.wrmf and $file_prefix$ibin.warf."
+	# set file_response ./data/clusters/$cname/$file_prefix$ibin.wrmf
+	# set file_arf ./data/clusters/$cname/$file_prefix$ibin.warf
+	
+	# ----------------------- USING DUMMY RESPONSE -----------------------
+	# dummy 0.3 11. $nchannels2 lin
+	# ----------------------- USING DUMMY RESPONSE -----------------------
+	
+	# ----------------------- USING CONSTANT RESPONSE -----------------------
+	set file_response $XIGAR/data/clusters/$cname/1666_3.wrmf
+	set file_arf $XIGAR/data/clusters/$cname/1666_3.warf
+	# ----------------------- USING CONSTANT RESPONSE -----------------------
+	
 	# Initiate the model (ignoring parameters for now)
+	model none
 	model mekal & $temp & $nH & $abundance & $redshift & $switch & $norm &
 	
 	# Add the galactic absorbtion
@@ -44,26 +61,23 @@ if {[exec ls ./tmp/] == ""} then {
 
 	# Run through all parameters generating spectra and dumping to unique ACSII files
 	#for {set ibin 1} {$ibin <= $nbin} {incr ibin} {
-		
-		# Change the response files according to the current bin.
-		# puts "Changing response files to: $file_prefix$ibin.wrmf and $file_prefix$ibin.warf."
-		# set file_response ./data/clusters/$cname/$file_prefix$ibin.wrmf
-		# set file_arf ./data/clusters/$cname/$file_prefix$ibin.warf
-		
-		dummy 0.3 11. $nchannels2 lin
-		
+		             
 		for {set param $param_min} {$param <= $param_max} {set param [expr $param + $stepsize]} {
 			newpar $ipar & $param
-			data none
-		
+			
 			# puts "Faking spectrum with parameter $ipar = $param."
-			fakeit none & &y & & ./tmp/fakespec.fak & $exposure &
-			# Uncomment next line to use external response matrices
-			# fakeit none & $file_response & $file_arf & y & & ./data/output/fakespec.fak & $exposure &
+			data none
+			
+			# ----------------------- USING DUMMY RESPONSE -----------------------
+			# fakeit none & & n & & ./tmp/fakespec.fak & $exposure &
+			# fdump infile=./tmp/fakespec.fak outfile=./tmp/fakespec_[format "%4.3f" $param].txt columns='COUNTS' rows=1-$nchannels2 prhead=no
+			
+			# ----------------------- USING CONSTANT RESPONSE -----------------------
+			fakeit none & $file_response & $file_arf & n & & ./tmp/fakespec.fak & $exposure &
+			fdump infile=./tmp/fakespec.fak outfile=./tmp/fakespec_[format "%4.3f" $param].txt columns='COUNTS' rows=1-$nchannels prhead=no
 			
 			puts "Dumping spectrum to: fakespec_$param.txt"
-			fdump infile=./tmp/fakespec.fak outfile=./tmp/fakespec_[format "%4.3f" $param].txt columns='COUNTS' rows=1-$nchannels2 prhead=no
-			
+						
 			# puts "Dumping spectrum to: fakespec_$ibin-$ipar-$param.txt"
 			# fdump infile=./data/output/fakespec.fak outfile=./data/output/fakespec_$ibin-$ipar-[format "%4.3f" $param].txt columns='COUNTS' rows=1-1070 prhead=no
 		}

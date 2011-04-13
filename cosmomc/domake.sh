@@ -1,4 +1,6 @@
 #!/bin/bash
+source /Users/askielboe/ls/xigar/settings.sh
+source /Users/askielboe/ls/xigar/copy_to_camb.sh
 rm parameters.txt
 cp empty.txt parameters.txt
 rm bestxraylike.txt

@@ -15,3 +15,4 @@ settings.tcl
 /settings.sh
 /settings.tcl
 /cosmomc/fit_params.f90
+*.log

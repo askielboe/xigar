@@ -34,7 +34,8 @@ set Hcolumn 0.026
 # set r [list 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.11 0.14 0.23 1.]
 # set r [list 0.04 0.06 0.08 0.10 0.12 0.14 0.17 0.21 0.26 0.34 0.49 1.]
 # set r [list [expr 1./12.] [expr 2./12.] [expr 3./12.] [expr 4./12.] [expr 5./12.] [expr 6./12.] [expr 7./12.] [expr 8./12.] [expr 9./12.] [expr 10./12.] [expr 11./12.] [expr 12./12.]]
-set r [list 0.04 0.06 0.08 0.10 0.12 0.15 0.18 0.22 0.27 0.34 0.46 1.]
+## set r [list 0.04 0.06 0.08 0.10 0.12 0.15 0.18 0.22 0.27 0.34 0.46 1.]
+set r [list 0.03 0.05 0.07 0.09 0.11 0.13 0.16 0.19 0.23 0.30 0.44 1.]
 
 # Number of annuli
 set N [llength $r]
@@ -58,7 +59,7 @@ set param_min 0.3	; # Decimals are limited to 3 places,
 set param_max 11.	; # this can be changed, but then has to be changed in the fortran code as well.
 set nspectra 100.	; # Note that we actually get nspectra+1 spectra!
 set param_break 3.; # Set the value of the break between fits in ROOT.
-set resolution 1  ; # Number of spectra to use per annulus.
+set resolution 10  ; # Number of spectra to use per annulus.
 
 # ------------------------------ MODELS / PROFILES ----------------------------- #
 # Fake exposure (exposure to fake with) data is = 41796.2

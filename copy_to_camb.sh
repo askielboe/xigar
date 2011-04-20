@@ -16,5 +16,6 @@ rsync -t $XIGAR/cosmomc/empty.txt $COSMO/empty.txt
 rsync -t $XIGAR/cosmomc/worstxraylike.txt $COSMO/worstxraylike.txt
 # Copy COSMOMC Source files and Makefiles
 rsync -t $XIGAR/cosmomc/source/settings.f90 $COSMO/source/settings.f90
+rsync -t $XIGAR/cosmomc/source/calclike.f90 $COSMO/source/calclike.f90
 rsync -t $XIGAR/cosmomc/source/Makefile $COSMO/source/Makefile
 rsync -t $XIGAR/cosmomc/domake.sh $COSMO/domake.sh

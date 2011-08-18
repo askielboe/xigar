@@ -32,12 +32,12 @@ b = a*(beta + alpha*a)
 ! b = Log10(a)*a**2+beta*a
 !write(*,*) b
 
-! Prevent the cluster from going from prolate to oblate, instead we enforce prolate -> spherical.
-do counter = 1, i
-	if (b(counter) < a(counter)) then
-		b(counter) = a(counter)
-	end if
-end do
+!! Prevent the cluster from going from prolate to oblate, instead we enforce prolate -> spherical.
+! do counter = 1, i
+! 	if (b(counter) < a(counter)) then
+! 		b(counter) = a(counter)
+! 	end if
+! end do
 
 ia = 1
 do

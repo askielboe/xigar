@@ -17,3 +17,4 @@ settings.tcl
 /cosmomc/fit_params.f90
 *.log
 /local/
+/logs/

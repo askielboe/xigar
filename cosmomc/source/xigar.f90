@@ -36,15 +36,17 @@ function temp_profile(par1, par2, par3)
 
 	INTEGER,PARAMETER			:: N = nannuli*resolution
 	REAL,intent(in) 			:: par1, par2, par3
-	INTEGER 						:: i
+	INTEGER 					:: i
 	REAL,DIMENSION(N)			:: temp_profile, r
-	REAL							:: rtmc
-	REAL							:: a 
-	REAL							:: b 
-	REAL							:: c
+	REAL						:: tzero
+	REAL						:: rtmc
+	REAL						:: a
+	REAL						:: b 
+	REAL						:: c
 	LOGICAL						:: outrange
 	
 	r = rannuli_resolved
+	tzero = 5.
 	rtmc = par1
 	a = par2
 	b = par3
@@ -54,9 +56,9 @@ function temp_profile(par1, par2, par3)
 	
 	do i = 1,N
 		! OLD PROFILE
-		! temp_profile(i) = tnorm*(r(i)/rtmc)**(-a)/(1+(r(i)/rtmc)**b)**(c/b)
+		! temp_profile(i) = tzero*(r(i)/rtmc)**(-a)/(1+(r(i)/rtmc)**b)**(c/b)
 		! NEW PROFILE
-		temp_profile(i) = tnorm*(1.+a*r(i)/rtmc)/((1.+(r(i)/rtmc)**2.)**b)
+		temp_profile(i) = tzero*(1.+a*r(i)/rtmc)/((1.+(r(i)/rtmc)**2.)**b)
 		! write(*,*) "temp_profile(",i,") = ",temp_profile(i)
 		if (temp_profile(i) < 0.3 .OR. temp_profile(i) > 11.) then
 			outrange = .true.
@@ -121,7 +123,7 @@ function xraylike(Params)
 	INTEGER,PARAMETER					:: startoff = 20, cutoff = 350 ! Define range in which the fit tries to converge
 	INTEGER,PARAMETER					:: N = nannuli*resolution, nbins = nchannels
 
-	REAL,DIMENSION(N)					:: T, rho
+	REAL,DIMENSION(N)					:: T, Treal, rho, rhoreal
 	REAL									:: alphamc, betamc
 	
 	REAL,DIMENSION(cutoff-startoff)	:: spectrum_summed, rspec_summed
@@ -200,55 +202,60 @@ function xraylike(Params)
 ! ------------------------ WARNING!!! DOES NOT WORK!!! ------------------------
 ! ------------------------ NEW METHOD: SUM FIRST, THEN CALCULATE LIKELIHOOD ------------------------
 
-if (xraylike .eq. 0.) then
-	xraylike = 100000.
-end if
+if (exp(-1./2.*xraylike) .ge. 0.01) then
+	! Write all parameters to files in each iteration, to look for degeneracy.
+	open(1,file='parameters.txt',access = 'append')
+		!write(1,'(F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10)') exp(-1./2.*xraylike), Params
+		write(1,*) exp(-1./2.*xraylike), Params
+	close(1)
 
-! Write all parameters to files in each iteration, to look for degeneracy.
-open(1,file='parameters.txt',access = 'append')
-	!write(1,'(F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10)') exp(-1./2.*xraylike), Params
-	write(1,*) exp(-1./2.*xraylike), Params
-close(1)
-
-! Calculate if this chi2 is better than previous ones. If it is, we print the spectra to files.
-open(1,file='bestxraylike.txt',form='formatted')
-read(1,*) bestxraylike
-close(1)
-!write(*,*) "COMPARING: ", xraylike, " < ", bestxraylike, " RESULT = ", (xraylike < bestxraylike)
-!if (.TRUE.) then
-if (xraylike < bestxraylike) then
-	write(*,*) "NEW BEST CHI2: ", xraylike
-	write(*,*) "BEST PARAMETERS: ", Params
+	! Calculate if this chi2 is better than previous ones. If it is, we print the spectra to files.
 	open(1,file='bestxraylike.txt',form='formatted')
-	write(1,'(e20.10)') xraylike
+	read(1,*) bestxraylike
 	close(1)
-	!if (T(1) > 0) then
-	!write(*,*) T
-	open(1,file='spectrum.txt',form='formatted')
-	do i = startoff,cutoff
-		if (i > cutoff) exit
-		spectrum_summed(i) = 0.
-		do j=1,N
-			spectrum_summed(i) = spectrum_summed(i) + spectrum(j,i)
+	!write(*,*) "COMPARING: ", xraylike, " < ", bestxraylike, " RESULT = ", (xraylike < bestxraylike)
+	!if (.TRUE.) then
+	if (xraylike < bestxraylike) then
+		write(*,*) "NEW BEST CHI2: ", xraylike
+		write(*,*) "BEST PARAMETERS: ", Params
+		open(1,file='bestxraylike.txt',form='formatted')
+		write(1,'(e20.10)') xraylike
+		close(1)
+		!if (T(1) > 0) then
+		!write(*,*) T
+		! ! ! ! ! ! ! ! ! WRITE MCMC SPECTRUM ! ! ! ! ! ! ! ! !
+		open(1,file='spectrum.txt',form='formatted')
+		do i = startoff,cutoff
+			if (i > cutoff) exit
+			spectrum_summed(i) = 0.
+			do j=1,N
+				spectrum_summed(i) = spectrum_summed(i) + spectrum(j,i)
+			end do
+			write(1,'(i4, a1, e20.10)') i, ' ', spectrum_summed(i)
 		end do
-		write(1,'(i4, a1, e20.10)') i, ' ', spectrum_summed(i)
-	end do
-	close(1)
-	!write(*,*) xraylike
-	open(1,file='rspec.txt',form='formatted')
-	do i = startoff,cutoff
-		if (i > cutoff) exit
-		rspec_summed(i) = 0.
-		do j=1,N
-			rspec_summed(i) = rspec_summed(i) + rspec(j,i)
+		close(1)
+		! ! ! ! ! ! ! ! ! WRITE REAL SPECTRUM ! ! ! ! ! ! ! ! !
+		open(1,file='rspec.txt',form='formatted')
+		do i = startoff,cutoff
+			if (i > cutoff) exit
+			rspec_summed(i) = 0.
+			do j=1,N
+				rspec_summed(i) = rspec_summed(i) + rspec(j,i)
+			end do
+			write(1,'(i4, a1, e20.10)') i, ' ', rspec_summed(i)
 		end do
-		write(1,'(i4, a1, e20.10)') i, ' ', rspec_summed(i)
-	end do
-	close(1)
-	!end if
+		close(1)
+		! ! ! ! ! ! ! ! ! WRITE TEMP PROFILE ! ! ! ! ! ! ! ! !
+!		open(1,file='temp_profile.txt',form='formatted')
+!		Treal = temp_profile(0.15,2.5,0.7)
+!		do i = 1,N
+!			if (i > N) exit
+!			write(1,'(i4, a1, e20.10, a1, e20.10)') i, ' ', Treal(i), ' ', T(i)
+!		end do
+!		close(1)
+		!end if
+	end if
 end if
-
-! 	xraylike=(Params(1)-3.)**2. !+ (Params(2) - 10.)**2.
 
 xraylike = exp(-1./2.*xraylike)
 

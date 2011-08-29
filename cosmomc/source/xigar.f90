@@ -120,7 +120,7 @@ function xraylike(Params)
 	REAL,DIMENSION(9),intent(in)	:: Params
 
 	INTEGER								:: i,j
-	INTEGER,PARAMETER					:: startoff = 20, cutoff = 350 ! Define range in which the fit tries to converge
+	INTEGER,PARAMETER					:: startoff = 25, cutoff = 350 ! Define range in which the fit tries to converge
 	INTEGER,PARAMETER					:: N = nannuli*resolution, nbins = nchannels
 
 	REAL,DIMENSION(N)					:: T, Treal, rho, rhoreal
@@ -149,7 +149,7 @@ function xraylike(Params)
 	
 	! CALCULATE THE LIKELIHOOD
 	! TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY
-	rspec = TRANSPOSE(RESHAPE(rspeclong, (/ nchannels,nannuli /)))
+	rspec = TRANSPOSE(RESHAPE(rspeclong, (/ nchannels,nannuli /))) * scale
 	! TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY
 	xraylike = 0.
 	
@@ -168,16 +168,24 @@ function xraylike(Params)
 ! 			write(*,*) "i = ",i," and j = ",j
 ! 			write(*,*) "Calculating: (",spectrum(i,j)," - ",rspec(i,j),")^2"
 			!if (spectrum(i,j) > 0) then
-				xraylike = xraylike + ( (spectrum(i,j)-rspec(i,j)) )**2./spectrum(i,j)
+				xraylike = xraylike + ( (spectrum(i,j)-rspec(i,j)) )**2./rspec(i,j)
+! 				if (rspec(i,j) == 0.0) then
+! 					write(*,*) "( (spectrum(i,j)-rspec(i,j)) )**2. / rspec(i,j) = ",( (spectrum(i,j)-rspec(i,j)) )**2., & 
+! 					" / ",rspec(i,j)," = ", ( (spectrum(i,j)-rspec(i,j)) )**2./rspec(i,j)
+! 				end if
 			!else
 			!	write(*,*) "WARNING: rspec <= 0 !!!"
 			!end if
- 			!write(*,*) "RESULT: ",( (spectrum(i,j)-rspec(i,j)) )**2.
+			!write(*,*) "( (spectrum(i,j)-rspec(i,j)) )**2. = (",spectrum(i,j)," - ",rspec(i,j),")**2.", &
+			!" = (", spectrum(i,j)-rspec(i,j), ")**2. = ", ( (spectrum(i,j)-rspec(i,j)) )**2.
+			!
+			
 		end do
 		!write(*,*) "xraylike summed up to bin ",i," = ",xraylike
 	end do
-	xraylike = xraylike/(cutoff-startoff)/N
-	!write(*,*) xraylike
+	xraylike = xraylike/N
+	!xraylike = xraylike/(cutoff-startoff)/N
+	!write(*,*) "xraylike = ",xraylike
 	!write (*,*) Params(3)
 
 ! ------------------------ OLD METHOD: SUM INDIVIDUALLY ------------------------
@@ -202,11 +210,11 @@ function xraylike(Params)
 ! ------------------------ WARNING!!! DOES NOT WORK!!! ------------------------
 ! ------------------------ NEW METHOD: SUM FIRST, THEN CALCULATE LIKELIHOOD ------------------------
 
-if (exp(-1./2.*xraylike) .ge. 0.01) then
+if (exp(-1./2.*xraylike) .ge. 0.0) then
 	! Write all parameters to files in each iteration, to look for degeneracy.
 	open(1,file='parameters.txt',access = 'append')
-		!write(1,'(F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10)') exp(-1./2.*xraylike), Params
-		write(1,*) exp(-1./2.*xraylike), Params
+	write(1,*) exp(-1./2.*xraylike), Params	!write(1,'(F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10)') exp(-1./2.*xraylike), Params
+	!write(*,*) exp(-1./2.*xraylike), Params
 	close(1)
 
 	! Calculate if this chi2 is better than previous ones. If it is, we print the spectra to files.
@@ -216,10 +224,10 @@ if (exp(-1./2.*xraylike) .ge. 0.01) then
 	!write(*,*) "COMPARING: ", xraylike, " < ", bestxraylike, " RESULT = ", (xraylike < bestxraylike)
 	!if (.TRUE.) then
 	if (xraylike < bestxraylike) then
-		write(*,*) "NEW BEST CHI2: ", xraylike
+		write(*,*) "NEW BEST CHI2: ", xraylike, "LIKELIHOOD: ", exp(-1./2.*xraylike)
 		write(*,*) "BEST PARAMETERS: ", Params
 		open(1,file='bestxraylike.txt',form='formatted')
-		write(1,'(e20.10)') xraylike
+		write(1,'(ES20.10)') xraylike
 		close(1)
 		!if (T(1) > 0) then
 		!write(*,*) T
@@ -231,19 +239,22 @@ if (exp(-1./2.*xraylike) .ge. 0.01) then
 			do j=1,N
 				spectrum_summed(i) = spectrum_summed(i) + spectrum(j,i)
 			end do
-			write(1,'(i4, a1, e20.10)') i, ' ', spectrum_summed(i)
+			write(1,'(i4, a1, ES20.10)') i, ' ', spectrum_summed(i)
 		end do
 		close(1)
 		! ! ! ! ! ! ! ! ! WRITE REAL SPECTRUM ! ! ! ! ! ! ! ! !
 		open(1,file='rspec.txt',form='formatted')
+		open(2,file='dummy.txt',form='formatted')
 		do i = startoff,cutoff
 			if (i > cutoff) exit
 			rspec_summed(i) = 0.
 			do j=1,N
 				rspec_summed(i) = rspec_summed(i) + rspec(j,i)
 			end do
-			write(1,'(i4, a1, e20.10)') i, ' ', rspec_summed(i)
+			write(1,'(i4, a1, ES20.10)') i, ' ', rspec_summed(i)
+			write(2,'(i4, a1, ES20.10)') i, ' ', rspec_summed(i)
 		end do
+		close(2)
 		close(1)
 		! ! ! ! ! ! ! ! ! WRITE TEMP PROFILE ! ! ! ! ! ! ! ! !
 !		open(1,file='temp_profile.txt',form='formatted')
@@ -257,7 +268,10 @@ if (exp(-1./2.*xraylike) .ge. 0.01) then
 	end if
 end if
 
+!Used when you want to plug in your own CMB-independent likelihood function:
+!set generic_mcmc=.true. in settings.f90, then write function here returning -Ln(Likelihood)
 xraylike = exp(-1./2.*xraylike)
+xraylike = -Log(xraylike)
 
 return
 end function xraylike
@@ -267,10 +281,10 @@ function prospec(T,rho,alphamc,betamc)
 	use xigar_params
 	use fit_params
 	use sphvol
-	use resp_matrix
+	!use resp_matrix
 
-	INTEGER, PARAMETER				:: mresp=nchannels, nresp=nchannels2
-	REAL,DIMENSION(mresp,nresp) 	:: resp
+	!INTEGER, PARAMETER				:: mresp=nchannels, nresp=nchannels2
+	!REAL,DIMENSION(mresp,nresp) 	:: resp
 
 	INTEGER,PARAMETER					::	N = nannuli*resolution, nbins = nchannels
 	REAL,intent(in)					:: alphamc, betamc
@@ -337,7 +351,7 @@ function usynthspec(T, rho) ! Calculate unit-volume synthetic spectrum for given
 
 	use xigar_params
 	use fit_params
-	use resp_matrix
+	!use resp_matrix
 	!use sphvol
 
 	REAL								:: exp, alphamc, betamc
@@ -350,13 +364,13 @@ function usynthspec(T, rho) ! Calculate unit-volume synthetic spectrum for given
 	if (T < param_break) then ! Limits: Lowpar: t = 0..3 keV, Highpar: t = 3..15 keV
 		do i = 1,nchannels
 			usynthspec(i) = lowpar1(i) * T**3. + lowpar2(i) * T**2. + lowpar3(i)*T + lowpar4(i)
-			usynthspec(i) = exp(usynthspec(i)) * rho ** 2. * exposure
+			usynthspec(i) = exp(usynthspec(i)) * rho ** 2. * scale !* exposure
 			!write(*,*) "usynthspec(i) = ",usynthspec(i)
 		end do
 	else if (T >= param_break) then
 		do i = 1,nchannels
 			usynthspec(i) = highpar1(i) * T**3. + highpar2(i) * T**2. + highpar3(i)*T + highpar4(i)
-			usynthspec(i) = exp(usynthspec(i)) * rho ** 2. * exposure
+			usynthspec(i) = exp(usynthspec(i)) * rho ** 2. * scale !* exposure
 			!write(*,*) "usynthspec(i) = ",usynthspec(i)
 		end do
 	end if

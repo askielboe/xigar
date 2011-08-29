@@ -19,7 +19,10 @@ void PlotParams() {
 	}
 
 	// // // // // // Set input filename // // // // // //
-	TString fnamein = "/Users/askielboe/projects/astrophysics/cosmomc/parameters.txt";
+	// TString fnamein = "/Users/askielboe/projects/astrophysics/cosmomc/parameters.txt";
+	TString fnamein = "remote/parameters.txt";
+	// TString fnamein = "/Users/askielboe/Documents/Coding/Repositories/astro/xigar/logs/2011-08-29-0948/parameters.txt";
+	// TString fnamein = "/Users/askielboe/Documents/Coding/Repositories/astro/xigar/logs/2011-08-22-1656/parameters.txt";
 	// TString fnamein = "/Users/askielboe/Documents/Coding/Repositories/astro/xigar/logs/2011-07-28-1928 - mpitestrun4nodes1000samples/parameters.txt";
 	// TString fnamein = "/Users/askielboe/Documents/Coding/Repositories/astro/xigar/logs/2011-04-28-1741/parameters.txt";
 	// TString fnamein = "/Users/askielboe/Documents/Coding/Repositories/astro/xigar/logs/2011-04-22-1644/parameters.txt";
@@ -41,8 +44,8 @@ void PlotParams() {
 	Double_t like[n], Param1[n], Param2[n], Param3[n], Param4[n], Param5[n], Param6[n], Param7[n];
 	
 	// // // // // // SETTINGS // // // // // // 
-	Double_t likecut = 0.01;
-	Int_t nbins = 30;
+	Double_t likecut = 0.00;
+	Int_t nbins = 300;
 	
 	// // // // // // Define histograms // // // // // //
 	// 2011-04-22-1644

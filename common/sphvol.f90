@@ -29,6 +29,8 @@ INTEGER								:: is, ia
 
 ! b = 1./0.7*a
 b = a*(beta + alpha*a)
+! b = a*Exp(alpha*Log(a)+beta)
+!b = a*(alpha*Log(a) + beta)
 ! b = Log10(a)*a**2+beta*a
 !write(*,*) b
 

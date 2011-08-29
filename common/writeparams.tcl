@@ -36,7 +36,7 @@ set fout [open "$XIGAR/xigar_params.f90" w]
 	puts $fout "CHARACTER :: cname*[string length $cname]='$cname', cprefix*[string length $cprefix]='$cprefix'"
 	puts $fout "LOGICAL,PARAMETER :: use_external_response=.$use_external_response."
 	puts $fout "INTEGER,PARAMETER :: nchannels=$nchannels, nchannels2=$nchannels2, nspectra=$nspectra, nannuli=$N, resolution=$resolution"
-	puts $fout "REAL,PARAMETER :: param_min=$param_min, param_max=$param_max, exposure=$exposure, real_exposure=$real_exposure, param_break=$param_break"
+	puts $fout "REAL,PARAMETER :: param_min=$param_min, param_max=$param_max, exposure=$exposure, real_exposure=$real_exposure, scale=$scale, param_break=$param_break"
 	puts $fout "REAL,PARAMETER :: rt=$rt, ta=$ta, tb=$tb, tc=$tc, tnorm=$tnorm"
 	puts $fout "REAL,PARAMETER :: n0=$n0, rc=$rc, da=$da, db=$db"
 	puts $fout "REAL,PARAMETER :: alpha=$alpha, beta=$beta"	
@@ -69,7 +69,7 @@ close $fout
 set fout [open "$XIGAR/xigar_params.h" w]
 	#puts $fout "Varied parameter, minimum, maximum, exposure time. \n"
 	puts $fout "const Float_t param_min=$param_min, param_max=$param_max, param_break=$param_break;"
-	puts $fout "const Int_t exposure=$exposure, nchannels=$nchannels, nchannels2=$nchannels2, nspectra=$nspectra;"
+	puts $fout "const Int_t exposure=$exposure, scale=$scale,nchannels=$nchannels, nchannels2=$nchannels2, nspectra=$nspectra;"
 close $fout
 
 # Write Gnuplot

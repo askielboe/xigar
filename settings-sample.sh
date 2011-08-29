@@ -4,6 +4,16 @@
 
 # And rename the file to settings.sh
 
+#!/bin/bash
+
+# ----------------------- PROGRAM LOCATIONS -----------------------
+
+# Path to xigar directory
+XIGAR='/../../xigar'
+
+# Path to your cosmomc directory
+COSMO='/../../cosmomc'
+
 # Path to xspec (headas-init.sh)
 HEADAS='/.../.../heasoft-6.9/i386-apple-darwin10.3.0'
 

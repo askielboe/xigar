@@ -45,7 +45,7 @@ void PlotParams() {
 	
 	// // // // // // SETTINGS // // // // // // 
 	Double_t likecut = 0.00;
-	Int_t nbins = 300;
+	Int_t nbins = 200;
 	
 	// // // // // // Define histograms // // // // // //
 	// 2011-04-22-1644
@@ -62,8 +62,10 @@ void PlotParams() {
 	TH1F *h3 = new TH1F("h3","Param3: Tb",nbins,0.0,1.4);
 	TH1F *h4 = new TH1F("h4","Param4: n0",nbins,0.0,2.0);
 	TH1F *h5 = new TH1F("h5","Param5: Da",nbins,0.0,1.6);
-	TH1F *h6 = new TH1F("h6","Param6: alpha",nbins,0.0,6.0);
-	TH1F *h7 = new TH1F("h7","Param7: beta",nbins,0.0,1.0);
+	TH1F *h6 = new TH1F("h6","Param6: alpha",nbins,-1.0,1.0);
+	TH1F *h7 = new TH1F("h7","Param7: beta",nbins,-1.0,1.0);
+	// TH1F *h6 = new TH1F("h6","Param6: alpha",nbins,0.0,6.0);
+	// TH1F *h7 = new TH1F("h7","Param7: beta",nbins,0.0,1.0);
 	
 	// // // // // // Parse input file // // // // // //
 	in.open(fnamein);

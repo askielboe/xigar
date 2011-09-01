@@ -93,12 +93,12 @@ set da 0.8 ; # Johan: P4
 set db 0.7 ; # Johan: P3
 
 # NON-SPHERICAL PARAMETERS
-set alpha 3.0
-set beta 0.5
+# set alpha 3.0
+# set beta 0.5
 
-# New shape parametrization:
-# set alpha -0.5
-# set beta 0.0
+# New shape parametrization: Shape: b = a/Exp(alpha*Log(a)+beta)
+set alpha 0.5
+set beta 0.0
 
 # set alpha 0.8
 # set beta 0.5

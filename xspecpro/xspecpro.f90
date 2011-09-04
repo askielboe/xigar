@@ -17,7 +17,7 @@ CHARACTER 						:: dummy*7, fnamein*50, fnameout*50
 !!! Define resolution in each bin !!!
 !! INTEGER,PARAMETER				:: resolution = 10 DEFINED IN SETTINGS FILE!
 INTEGER,PARAMETER				:: N = nannuli*resolution
-REAL								:: r_bin_size, r_bin_step
+REAL								:: r_bin_size, r_bin_step, counts_total
 REAL,DIMENSION(N)				:: r_resolved
 !!! Define resolution in each bin !!!
 INTEGER							:: i, iann, j, bin
@@ -93,7 +93,7 @@ do iann = 1,N
 			read(1,*) dummy, counts(i,j)
 		end do
 		!write(*,*) "Calculating: counts*", V(iann,i), " * ", rho(i), "^2" !, " / ",exposure 
-		spectra(iann,:) = spectra(iann,:) + counts(i,:)*V(iann,i)*rho(i)**2 /exposure
+		spectra(iann,:) = spectra(iann,:) + counts(i,:)*V(iann,i)*rho(i)**2 / exposure * scale
 	end do
 end do
 close(1)
@@ -114,6 +114,7 @@ end do
 
 write(*,*) 'Writing output files...'
 ! Write integrated counts to file
+counts_total = 0.
 open(3,file='../data/clusters/fakec/integrated_counts.txt', status="replace", form='FORMATTED')
 ! Write output to txt files
 do i = 1,nannuli
@@ -127,8 +128,13 @@ do i = 1,nannuli
 	close(2)
 	write(*,*) "Integrated counts in annulus ", i, ": ",counts_integrated(i)
 	write(3,'(F20.10,ES20.10)') r_resolved(i), counts_integrated(i)
+	counts_total = counts_total + counts_integrated(i)
 end do
 close(3)
+
+write(*,*) "----------------------------------------------------------------------"
+write(*,*) "TOTAL NUMBER OF COUNTS = ", counts_total
+write(*,*) "======================================================================"
 
 ! Write output to FORTRAN module files (NEW WITH RESOLUTION)
 write(fnameout,'(a)') '../data/clusters/fakec/fakec.f90'

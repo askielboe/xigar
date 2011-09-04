@@ -20,7 +20,9 @@ void PlotParams() {
 
 	// // // // // // Set input filename // // // // // //
 	// TString fnamein = "/Users/askielboe/projects/astrophysics/cosmomc/parameters.txt";
-	TString fnamein = "remote/parameters.txt"; // REMOTE
+	// TString fnamein = "remote/parameters.txt"; // REMOTE
+	TString fnamein = "remote/xigar.txt"; // REMOTE
+	// TString fnamein = "/Users/askielboe/Documents/Coding/Repositories/astro/xigar/logs/2011-09-02-0944/xigar.txt";
 	// TString fnamein = "/Users/askielboe/Documents/Coding/Repositories/astro/xigar/logs/2011-09-01-0935/parameters.txt"; // Bedste run so far (7 params)
 	// TString fnamein = "/Users/askielboe/Documents/Coding/Repositories/astro/xigar/logs/2011-08-29-0948/parameters.txt";
 	// TString fnamein = "/Users/askielboe/Documents/Coding/Repositories/astro/xigar/logs/2011-08-22-1656/parameters.txt";
@@ -41,7 +43,7 @@ void PlotParams() {
 	const Int_t n = numLines;
 	Double_t dummy;
 	Int_t iline = 1, goodlines;
-	Double_t likecheck;
+	Double_t likecheck, count;
 	Double_t like[n], Param1[n], Param2[n], Param3[n], Param4[n], Param5[n], Param6[n], Param7[n], Param8[n];
 	
 	// // // // // // SETTINGS // // // // // // 
@@ -72,19 +74,19 @@ void PlotParams() {
 	// // // // // // Parse input file // // // // // //
 	in.open(fnamein);
 	while (iline < n) {
-		in >> likecheck;
+		in >> count >> likecheck;
 		// Do the cut
 		if (likecheck < likecut) {
-			in >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy;
+			in >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy;
 			iline++;
 		}
 		else {
-			like[iline] = likecheck;
-			in >> Param1[iline] >> Param2[iline] >> Param3[iline] >> Param4[iline] >> Param5[iline] >> Param6[iline] >> Param7[iline] >> Param8[iline] >> dummy;
+			like[iline] = count;
+			in >> Param1[iline] >> Param2[iline] >> Param3[iline] >> Param4[iline] >> Param5[iline] >> Param6[iline] >> Param7[iline] >> Param8[iline];
 			// Fill histograms
 			
 			/// DONT WEIGHT WITH LIKELIHOOD, SIMPLY COUNT PARAMETERS! ///
-			like[iline] = 1;
+			// like[iline] = 1;
 			/////////////////////////////////////////////////////////////
 			
 			h1->Fill(Param1[iline],like[iline]);

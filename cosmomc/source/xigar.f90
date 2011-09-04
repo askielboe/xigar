@@ -60,27 +60,38 @@ function temp_profile(par1, par2, par3)
 		! NEW PROFILE
 		temp_profile(i) = tzero*(1.+a*r(i)/rtmc)/((1.+(r(i)/rtmc)**2.)**b)
 		! write(*,*) "temp_profile(",i,") = ",temp_profile(i)
-		if (temp_profile(i) < 0.3 .OR. temp_profile(i) > 11.) then
-			outrange = .true.
-			exit
+
+! 		! OUTRANGE METHOD 1:
+! 		if (temp_profile(i) < 0.3 .OR. temp_profile(i) > 11.) then
+! 			outrange = .true.
+! 			exit
+! 		end if
+
+		! OUTRANGE METHOD 2:
+		if (temp_profile(i) < 0.3) then
+			temp_profile(i) = 0.3
+		else if (temp_profile(i) > 12.) then
+			temp_profile(i) = 12.
 		end if
+
+
 	end do
 	
 	if (outrange .eqv. .true.) then
 		do i = 1,N
-			temp_profile(i) = 0
+			temp_profile(i) = 0.
 		end do
 	end if
 	
 end function temp_profile
 
-function density_profile(par1, par2, par3)
+function density_profile(par1, par2, par3, par4)
 
 	use xigar_params
 
 	!INTEGER,PARAMETER			:: nannuli = 6
 	INTEGER,PARAMETER			:: N = nannuli*resolution
-	REAL,intent(in) 			:: par1, par2, par3!, par4
+	REAL,intent(in) 			:: par1, par2, par3, par4
 	INTEGER 						:: i
 	REAL,DIMENSION(N) 		:: density_profile, r
 	REAL							:: n0mc
@@ -92,8 +103,8 @@ function density_profile(par1, par2, par3)
 	n0mc = par1
 	rcmc = par2
 	alphamc = par3
-	! betamc = par4
-	betamc = 0.7 ! debsity beta
+	betamc = par4
+	! betamc = 0.7 ! debsity beta
 
 	do i = 1,N
 		! OLD PROFILE density_profile(i) = n0mc**2 * (r(i)/rcmc)**(-alphamc) / (1+r(i)**2/rcmc**2)**(1-alphamc)
@@ -119,7 +130,7 @@ function xraylike(Params)
 
 	REAL,DIMENSION(9),intent(in)	:: Params
 
-	INTEGER								:: i,j
+	INTEGER								:: i,j,bin
 	INTEGER,PARAMETER					:: startoff = 25, cutoff = 350 ! Define range in which the fit tries to converge
 	INTEGER,PARAMETER					:: N = nannuli*resolution, nbins = nchannels
 
@@ -127,35 +138,52 @@ function xraylike(Params)
 	REAL									:: alphamc, betamc
 	
 	REAL,DIMENSION(cutoff-startoff)	:: spectrum_summed, rspec_summed
-	REAL,DIMENSION(nannuli,nchannels)	:: spectrum
+	REAL,DIMENSION(nannuli,nchannels)	:: spectrum, rspec_nannuli
 	REAL									:: xraylike, bestxraylike, chisquare, reallike
 	
 	! write(*,*) "FUNCTION: XRAYLIKE CALLED"
 	
 	!T = (/ 7.1676579, 6.8666706, 6.6758351, 6.5216861, 6.3921208, 6.2625418 /)
 	T = temp_profile(Params(1),Params(2),Params(3))
-	rho = density_profile(Params(4),Params(1),Params(5))
+! 	if (T(1) == 0) then ! If themperature is out of range, stop and return likelihood = 0.
+! 		xraylike = 10.E10
+! 		return
+! 	end if
+	
+	! Get profiles from MCMC parameters
+	rho = density_profile(Params(4),Params(1),Params(5),Params(6))
+	alphamc = Params(7)
+	betamc = Params(8)
+	
+	! Generate spectrum using parameters
+	spectrum = prospec(T,rho,alphamc,betamc)
+	
+	! Reshape and sum 'real' spectrum for comparison
+	rspec = TRANSPOSE(RESHAPE(rspeclong, (/ nchannels,nannuli /)))
+! 	bin = 1
+! 	do i = 1,nannuli
+! 		rspec_nannuli(i,:) = 0.
+! 		do j = 1,resolution
+! 			rspec_nannuli(i,:) = rspec_nannuli(i,:) + rspec(bin,:)
+! 			bin = bin + 1
+! 		end do
+! 	end do
+	
 	!rho = (/ 2.52048515E-08,  1.64124643E-08,  1.23813395E-08,  9.80190240E-09,  8.01975997E-09,  6.53458088E-09 /)
 	
 	!write(*,*) "Temp(1) = ", T(1)
 	!write(*,*) "Density(1) = ", rho(1)
 	
-	alphamc = Params(6)
 	!write(*,*) "Alpha = ", alpha
 	!betamc = 3.0 ! Beta sphvol! Params(10) ! Or maybe a constant? ! Beta sphvol!
-	betamc = Params(7)
-	
-	spectrum = prospec(T,rho,alphamc,betamc)
 	
 	! CALCULATE THE LIKELIHOOD
-	! TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY
-	rspec = TRANSPOSE(RESHAPE(rspeclong, (/ nchannels,nannuli /))) * scale
-	! TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY - TEMPORARY
+	
 	xraylike = 0.
 	
 ! ------------------------ OLD METHOD: SUM INDIVIDUALLY ------------------------
 	
-	do i=1,N
+	do i=1,nannuli
 		do j=startoff,cutoff
 			if (j > cutoff) exit
 ! 			write(*,*) "T parameters:", Params(1),Params(2),Params(3),Params(4)
@@ -169,22 +197,16 @@ function xraylike(Params)
 ! 			write(*,*) "Calculating: (",spectrum(i,j)," - ",rspec(i,j),")^2"
 			!if (spectrum(i,j) > 0) then
 				xraylike = xraylike + ( (spectrum(i,j)-rspec(i,j)) )**2./rspec(i,j)
-! 				if (rspec(i,j) == 0.0) then
-! 					write(*,*) "( (spectrum(i,j)-rspec(i,j)) )**2. / rspec(i,j) = ",( (spectrum(i,j)-rspec(i,j)) )**2., & 
-! 					" / ",rspec(i,j)," = ", ( (spectrum(i,j)-rspec(i,j)) )**2./rspec(i,j)
-! 				end if
-			!else
-			!	write(*,*) "WARNING: rspec <= 0 !!!"
-			!end if
-			!write(*,*) "( (spectrum(i,j)-rspec(i,j)) )**2. = (",spectrum(i,j)," - ",rspec(i,j),")**2.", &
-			!" = (", spectrum(i,j)-rspec(i,j), ")**2. = ", ( (spectrum(i,j)-rspec(i,j)) )**2.
-			!
+				! Monitoring output:
+! 				write(*,*) "( (spectrum(i,j)-rspec(i,j)) )**2. / rspec(i,j) = ",( (spectrum(i,j)-rspec(i,j)) )**2., & 
+! 				" / ",rspec(i,j)," = ", ( (spectrum(i,j)-rspec(i,j)) )**2./rspec(i,j)
+! 				write(*,*) "xraylike = ",xraylike
 			
 		end do
 		!write(*,*) "xraylike summed up to bin ",i," = ",xraylike
 	end do
-	xraylike = xraylike/N
-	!xraylike = xraylike/(cutoff-startoff)/N
+	xraylike = xraylike/nannuli
+	!xraylike = xraylike/(cutoff-startoff)/nannuli
 	!write(*,*) "xraylike = ",xraylike
 	!write (*,*) Params(3)
 
@@ -212,10 +234,11 @@ function xraylike(Params)
 
 if (exp(-1./2.*xraylike) .ge. 0.0) then
 	! Write all parameters to files in each iteration, to look for degeneracy.
-	open(1,file='parameters.txt',access = 'append')
-	write(1,*) exp(-1./2.*xraylike), Params	!write(1,'(F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10)') exp(-1./2.*xraylike), Params
-	!write(*,*) exp(-1./2.*xraylike), Params
-	close(1)
+	! open(1,file='parameters.txt',access = 'append')
+	! write(1,*) exp(-1./2.*xraylike), Params	
+	! write(1,'(F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10)') exp(-1./2.*xraylike), Params
+	! write(*,*) exp(-1./2.*xraylike), Params
+	! close(1)
 
 	! Calculate if this chi2 is better than previous ones. If it is, we print the spectra to files.
 	open(1,file='bestxraylike.txt',form='formatted')
@@ -236,7 +259,7 @@ if (exp(-1./2.*xraylike) .ge. 0.0) then
 		do i = startoff,cutoff
 			if (i > cutoff) exit
 			spectrum_summed(i) = 0.
-			do j=1,N
+			do j=1,nannuli
 				spectrum_summed(i) = spectrum_summed(i) + spectrum(j,i)
 			end do
 			write(1,'(i4, a1, ES20.10)') i, ' ', spectrum_summed(i)
@@ -248,7 +271,7 @@ if (exp(-1./2.*xraylike) .ge. 0.0) then
 		do i = startoff,cutoff
 			if (i > cutoff) exit
 			rspec_summed(i) = 0.
-			do j=1,N
+			do j=1,nannuli
 				rspec_summed(i) = rspec_summed(i) + rspec(j,i)
 			end do
 			write(1,'(i4, a1, ES20.10)') i, ' ', rspec_summed(i)
@@ -277,7 +300,7 @@ return
 end function xraylike
 
 function prospec(T,rho,alphamc,betamc)
-
+! Functions generates spectrum of (nannuli,nchannels) using profiles from MCMC.
 	use xigar_params
 	use fit_params
 	use sphvol

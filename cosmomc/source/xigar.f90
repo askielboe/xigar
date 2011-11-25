@@ -109,7 +109,7 @@ function density_profile(par1, par2, par3, par4)
 	do i = 1,N
 		! OLD PROFILE density_profile(i) = n0mc**2 * (r(i)/rcmc)**(-alphamc) / (1+r(i)**2/rcmc**2)**(1-alphamc)
 		! NEW PROFILE
-		density_profile(i) = n0mc**2. * (r(i)/rcmc)**(-alphamc/2.) / (1+r(i)**2/rcmc**2)**(3./2.*betamc-alphamc/4.)
+		density_profile(i) = n0mc * (r(i)/rcmc)**(-alphamc/2.) / (1+r(i)**2/rcmc**2)**(3./2.*betamc-alphamc/4.)
 		! write(*,*) "n0mc, rcmc, alphamc, betamc = ",n0mc,rcmc,alphamc,betamc
 		! write(*,*) "density_profile(",r(i),") = ", density_profile(i)
 	end do
@@ -234,11 +234,11 @@ function xraylike(Params)
 
 if (exp(-1./2.*xraylike) .ge. 0.0) then
 	! Write all parameters to files in each iteration, to look for degeneracy.
-	! open(1,file='parameters.txt',access = 'append')
-	! write(1,*) exp(-1./2.*xraylike), Params	
-	! write(1,'(F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10)') exp(-1./2.*xraylike), Params
-	! write(*,*) exp(-1./2.*xraylike), Params
-	! close(1)
+! 	open(1,file='parameters.txt',access = 'append')
+! 	write(1,*) exp(-1./2.*xraylike), Params	
+! 	write(1,'(F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10,F20.10)') exp(-1./2.*xraylike), Params
+! 	write(*,*) exp(-1./2.*xraylike), Params
+! 	close(1)
 
 	! Calculate if this chi2 is better than previous ones. If it is, we print the spectra to files.
 	open(1,file='bestxraylike.txt',form='formatted')

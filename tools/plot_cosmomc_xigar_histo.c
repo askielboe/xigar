@@ -19,9 +19,10 @@ void PlotParams() {
 	}
 
 	// // // // // // Set input filename // // // // // //
+	// TString fnamein = "/Users/askielboe/projects/astrophysics/cosmomc/xigar.txt";
+	TString fnamein = "remote/xigar.txt"; // REMOTE
 	// TString fnamein = "/Users/askielboe/projects/astrophysics/cosmomc/parameters.txt";
 	// TString fnamein = "remote/parameters.txt"; // REMOTE
-	TString fnamein = "remote/xigar.txt"; // REMOTE
 	// TString fnamein = "/Users/askielboe/Documents/Coding/Repositories/astro/xigar/logs/2011-09-02-0944/xigar.txt";
 	// TString fnamein = "/Users/askielboe/Documents/Coding/Repositories/astro/xigar/logs/2011-09-01-0935/parameters.txt"; // Bedste run so far (7 params)
 	// TString fnamein = "/Users/askielboe/Documents/Coding/Repositories/astro/xigar/logs/2011-08-29-0948/parameters.txt";
@@ -176,8 +177,8 @@ void PlotParams() {
 	
 	c1->cd(9);
 	//c1_8->SetLogz();
-	gr8 = new TGraph2D(n,Param2,Param3,like);
-	gr8->SetTitle("Param2 vs Param3: Ta vs Tb");
+	gr8 = new TGraph2D(n,Param4,Param7,like);
+	gr8->SetTitle("Param4 vs Param7: n0 vs alpha");
 	gr8->SetMarkerStyle(2);
 	gPad->SetTheta(90); // default is 30
 	gPad->SetPhi(0); // default is 30
@@ -186,8 +187,8 @@ void PlotParams() {
 	//gr8->Draw("cont,list");
 	
 	c1->cd(10);
-	gr9 = new TGraph2D(n,Param6,Param7,like);
-	gr9->SetTitle("Param6 vs Param7: Db vs alpha");
+	gr9 = new TGraph2D(n,Param5,Param7,like);
+	gr9->SetTitle("Param5 vs Param7: Da vs alpha");
 	gr9->SetMarkerStyle(2);
 	gPad->SetTheta(90); // default is 30
 	gPad->SetPhi(0); // default is 30
@@ -198,8 +199,8 @@ void PlotParams() {
 	//gr9->Draw("cont");
 	
 	c1->cd(11);
-	gr10 = new TGraph2D(n,Param5,Param6,like);
-	gr10->SetTitle("Param5 vs Param6: Da vs Db");
+	gr10 = new TGraph2D(n,Param6,Param7,like);
+	gr10->SetTitle("Param6 vs Param7: Db vs alpha");
 	gr10->SetMarkerStyle(2);
 	gPad->SetTheta(90); // default is 30
 	gPad->SetPhi(0); // default is 30

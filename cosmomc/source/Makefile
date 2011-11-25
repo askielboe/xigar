@@ -58,7 +58,7 @@ INCLUDE=
 
 #GFortran: if pre v4.3 add -D__GFORTRAN__
 F90C     = gfortran
-FFLAGS = -O3 -ffree-form -x f95-cpp-input
+FFLAGS = -O3 -ffree-form -x f95-cpp-input -D__GFORTRAN__
 LAPACKL = -Wl,-framework -Wl,accelerate
 
 #SGI, -mp toggles multi-processor. Use -O2 if -Ofast gives problems.
@@ -127,12 +127,12 @@ PARAMETERIZATION = params_CMB.o
 XRAYSOURCE = resp_matrix.o xigar_params.o fit_params.o sphvol.o rdata.o xigar.o
 
 F90FLAGS = -DMATRIX_SINGLE $(FFLAGS) $(IFLAG)../camb $(INCLUDE)
-LINKFLAGS = -L../camb -lcamb $(LAPACKL) 
+LINKFLAGS = -L../camb -lcamb $(LAPACKL)
 
-DISTFILES = utils.o ParamNames.o Matrix_utils.o settings.o GetDist.o
+DISTFILES = ParamNames.o Matrix_utils.o settings.o IO.o GetDist.o
 
-OBJFILES= utils.o ParamNames.o Matrix_utils.o settings.o IO.o cmbtypes.o Planck_like.o \
-	cmbdata.o WeakLen.o bao.o lrggettheory.o mpk.o supernovae.o HST.o SDSSLy-a-v3.o \
+OBJFILES=  ParamNames.o Matrix_utils.o settings.o IO.o cmbtypes.o Planck_like.o  \
+	cmbdata.o WeakLen.o bbn.o bao.o lrggettheory.o mpk.o supernovae.o HST.o SDSSLy-a-v3.o \
 	$(CLSFILE) paramdef.o $(PROPOSE) $(PARAMETERIZATION) $(XRAYSOURCE) calclike.o \
 	conjgrad_wrapper.o EstCovmat.o postprocess.o MCMC.o driver.o
 
@@ -167,12 +167,12 @@ default: cosmomc
 
 all : cosmomc getdist
 
-utils.o: ../camb/libcamb.a
-settings.o: utils.o
+settings.o: ../camb/libcamb.a
 cmbtypes.o: settings.o
 Planck_like.o: cmbtypes.o
-cmbdata.o: Planck_like.o $(WMAPOBJS)
+cmbdata.o: Planck_like.o  $(WMAPOBJS)
 WeakLen.o: cmbtypes.o
+bbn.o: settings.o
 bao.o: cmbtypes.o
 mpk.o: cmbtypes.o lrggettheory.o
 HST.o: cmbtypes.o

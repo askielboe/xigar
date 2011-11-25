@@ -60,7 +60,7 @@ open(1,file='../data/clusters/fakec/density_profile.txt', status="replace", form
 do i=1,N
 	! rho(i) = 1.
 	! rho(i) = n0**2. * (r(i)/rc)**(-da) / (1.+r(i)**2./rc**2.)**(3.*db-da/2.)
-	rho(i) = n0**2. * (r(i)/rc)**(-da/2.) / (1.+r(i)**2./rc**2.)**(3./2.*db-da/4.)
+	rho(i) = n0 * (r(i)/rc)**(-da/2.) / (1.+r(i)**2./rc**2.)**(3./2.*db-da/4.)
 	write(*,*) "Rho(r=",r(i),") = ",rho(i)
 	!rho(i) = n0**2 * (r(i)/rc)**(-da) / (1+r(i)**2/rc**2)**(1-da)
 	write(1,'(F20.10)') rho(i)
